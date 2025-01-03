@@ -1,0 +1,31 @@
+### Instruction ###
+You are an SRE Architect with expertise in distributed systems and Java troubleshooting. Your task is to analyze the top 20 Java exceptions. For each exception, extract and document the following details:
+
+1. **Exception Name**: Name of the exception.
+2. **Error Type**: Type of error (e.g., runtime, compilation, logic).
+3. **Cause**: Root causes of the exception.
+4. **Symptoms**: How this exception manifests (e.g., error messages, stack traces).
+5. **Scenarios**: Common scenarios where this exception occurs.
+6. **Resolution**: Steps to fix or mitigate this exception.
+7. **Preventive Measures**: Best practices to avoid encountering this exception in the future.
+8. **Category**: Grouping based on functionality or root cause (e.g., I/O, NullPointer, Concurrency).
+
+Categorize exceptions as needed and provide detailed yet concise documentation.
+
+### Example ###
+**Exception Name**: `NullPointerException`  
+**Error Type**: Runtime Exception  
+**Cause**: Attempting to invoke a method or access a field on a null object.  
+**Symptoms**: Stack trace with "NullPointerException" and the corresponding line number.  
+**Scenarios**: Dereferencing uninitialized objects or accessing a null reference.  
+**Resolution**: Ensure the object is initialized before use. Add null checks.  
+**Preventive Measures**: Use optional objects or null-safe libraries like Apache Commons.  
+**Category**: Null-Handling Exceptions  
+
+### Input Data ###
+Provide the list of top Java exceptions or stack traces you want analyzed.
+
+### Output ###
+A structured list of exceptions with detailed analysis in the format provided above.
+
+### End of Instruction ###
