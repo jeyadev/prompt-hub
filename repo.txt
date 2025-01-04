@@ -1,3 +1,9 @@
 https://github.com/voytas75/GPTprompts
 https://github.com/abilzerian/LLM-Prompt-Library?tab=readme-ov-file
 https://github.com/OpenBMB/XAgent
+
+generates integration code by reverse-engineering platforms' internal APIs -> https://github.com/Integuru-AI/Integuru
+Enterprise grade RAG systems -> https://www.galileo.ai/blog/mastering-rag-how-to-architect-an-enterprise-rag-system
+Synthetic data generator -> https://huggingface.co/blog/synthetic-data-generator
+Precise mathematical output prompt -> https://github.com/ruvnet/symbolic-scribe
+7 stages of llm -> https://www.usaii.org/ai-insights/7-stages-of-ai-in-product-development-infographic
