@@ -1,0 +1,3 @@
+https://github.com/voytas75/GPTprompts
+https://github.com/abilzerian/LLM-Prompt-Library?tab=readme-ov-file
+https://github.com/OpenBMB/XAgent
