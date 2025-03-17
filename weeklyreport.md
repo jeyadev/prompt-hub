@@ -65,6 +65,61 @@ Please find below the weekly health check summary for **March 3–9, 2025**. Thi
 
 ────────────────────────────────────────────  
 
+
+
+
+version 2
+
+# [WEEKLY HEALTH CHECK] Report for Week [Week Number], [Year]
+
+**On-Call Engineer / SRE Team:** [Your Name/Team]  
+**Reporting Period:** [Start Date] – [End Date]
+
+---
+
+## Overall RAG Summary
+
+| **Component**                | **Status (G/A/R)** |
+|------------------------------|--------------------|
+| **Infrastructure**           | [G/A/R]            |
+| **Application Performance**  | [G/A/R]            |
+| **Consumer Health Check**    | [G/A/R]            |
+| **Content Manager Health**   | [G/A/R]            |
+| **DB Health**                | [G/A/R]            |
+
+---
+
+## Weekly Highlights & Call Outs
+
+- **[Highlight 1]:** [E.g., "Recurring performance degradation observed in abc-store's upload method."]
+- **[Highlight 2]:** [E.g., "Increased error rates impacting consumer check; error budget burn is nearing threshold."]
+- **[Highlight 3]:** [Additional critical issues or notable improvements.]
+
+---
+
+## Additional Notes / Actions
+
+- [Summary of actions taken during the week, recommendations, or follow-up items.]
+- [E.g., "Capacity planning adjustments were initiated to address trending latency issues."]
+- [Planned maintenance or upcoming changes to review in the next cycle.]
+
+---
+
+## Dashboards for Detailed Health Monitoring
+
+- [Dynatrace Dashboard](https://www.dynatrace.com/)
+- [Splunk Dashboard](https://www.splunk.com/)
+
+---
+
+## From an SRE Perspective
+
+This weekly report is structured to provide an executive-friendly snapshot of system health by summarizing key components with RAG statuses. The goal is to enable quick identification of trends and issues that may impact reliability and performance. Detailed analysis is available via the attached dashboards, ensuring that both high-level decision-makers and technical teams have the insights they need for proactive remediation.
+
+---
+
+**End of Report**
+
 Thank you for your attention. Should you have any questions or need further clarification, please feel free to reach out.
 
 **Best regards,**  
