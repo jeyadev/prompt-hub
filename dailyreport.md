@@ -65,3 +65,51 @@ Thank you for your attention. If you have any questions or require further insig
 **Best regards,**  
 **[ENGINEER NAME]**  
 On-Call SRE Engineer
+
+
+
+
+
+Version 2
+# [HEALTH CHECK] Daily Report for [Date]
+
+**On-Call Engineer:** [Your Name]  
+**Time:** [Time]
+
+---
+
+## Overall RAG Summary
+
+| **Component**                | **Status (G/A/R)** |
+|------------------------------|--------------------|
+| **Infrastructure**           | [G/A/R]            |
+| **Application Performance**  | [G/A/R]            |
+| **Consumer Health Check**    | [G/A/R]            |
+| **Content Manager Health**   | [G/A/R]            |
+| **DB Health**                | [G/A/R]            |
+
+---
+
+## Highlights & Call Outs
+
+- **[Highlight 1]:** [Brief description of any critical incident or noteworthy issue.]
+- **[Highlight 2]:** [Any additional observations or actions needed.]
+- **[Highlight 3]:** [Further call outs, if applicable.]
+
+---
+
+## Additional Notes / Actions
+
+- [List any further notes, action items, or recommendations.]
+
+---
+
+## Dashboards for Detailed Health Monitoring
+
+- [Dynatrace Dashboard](https://www.dynatrace.com/)  
+- [Splunk Dashboard](https://www.splunk.com/)
+
+---
+
+**End of Report**
+
