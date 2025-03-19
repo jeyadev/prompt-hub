@@ -113,3 +113,84 @@ Version 2
 
 **End of Report**
 
+
+
+# Daily Health Check - Quick Reference
+
+This page explains **where** to look for the key metrics and **how** to verify the system’s status before filling out the [HEALTH CHECK] Daily Report.
+
+---
+
+## 1. Infrastructure
+- **Dynatrace**: 
+  - Check host-level CPU, memory, and disk usage across nodes.
+  - Look for any spikes or abnormal trends over the past 24 hours.
+- **Splunk**: 
+  - Search for system-level errors (e.g., OS or container logs).
+  - Filter on keywords like “OOM”, “disk full”, or “CPU throttling”.
+
+> **Tip**: Mark **Infrastructure** Amber or Red if resource usage is consistently above thresholds (e.g., >80% CPU or memory) or if you see recurring errors in Splunk logs.
+
+---
+
+## 2. Application Performance
+- **Dynatrace**:
+  - Review response times, throughput, and error rates for each microservice (abc-store, abc-find, etc.).
+  - Pay attention to any new performance degradation or slowdowns at P95/P99 latency.
+- **Splunk**:
+  - Check application logs for spikes in exceptions, timeouts, or specific error codes.
+
+> **Tip**: If response times or error rates exceed your defined Amber/Red thresholds, update the RAG status accordingly.
+
+---
+
+## 3. Consumer Health Check
+- **Automated Consumer Health Email** (Attached or Emailed):
+  - Scan for any Red or Amber statuses among consumers.
+- **Dynatrace** (if integrated):
+  - Look at service calls from consumer endpoints to detect anomalies.
+
+> **Tip**: If multiple consumers are reporting errors or failing health checks, mark **Consumer Health** Amber or Red.
+
+---
+
+## 4. Content Manager Health
+- **Dynatrace**:
+  - Check the Content Manager service dashboard for latency, CPU usage, and errors.
+- **Splunk**:
+  - Filter logs by the Content Manager service name for any error patterns (e.g., 5xx codes, repeated exceptions).
+
+> **Tip**: A few transient errors might be normal, but sustained failures or high latency warrants an Amber or Red rating.
+
+---
+
+## 5. DB Health
+- **Dynatrace** or **Database Monitoring Tool**:
+  - Check DB CPU usage, connection pool usage, and slow queries.
+  - Ensure replication (if any) is in sync.
+- **Splunk**:
+  - Look for DB-related error logs, especially if the application can’t connect or queries are timing out.
+
+> **Tip**: If the database shows sustained high usage (e.g., CPU > 80%), slow queries, or high error rates, consider marking **DB Health** Amber or Red.
+
+---
+
+## Determining RAG Status
+- **Green (G)**: 
+  - Normal operating range, no or minimal alerts.
+- **Amber (A)**: 
+  - Metrics nearing thresholds or sporadic errors; needs attention but not immediately critical.
+- **Red (R)**: 
+  - Critical thresholds exceeded or major outages; immediate investigation required.
+
+> **Note**: Always use your best judgment and consider business impact. If a single spike recovers quickly, you might still mark Green; but a sustained issue or repeated spikes often justifies Amber or Red.
+
+---
+
+## Quick Links
+- [Dynatrace Dashboard](https://www.dynatrace.com/)  
+- [Splunk Dashboard](https://www.splunk.com/)
+
+---
+
+**End of Instructions**
