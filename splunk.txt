@@ -1,0 +1,8 @@
+index="am_cds"
+cluster IN ("*em-uk*")
+"Took Connection, free Connections:"
+| rex field=_raw "free Connections:\s(?<free_connections>\d+)"
+| rex field=_raw "\"pod\":\"(?<pod>[^\"]+)\""
+| where free_connections < 2
+| stats count by pod
+| sort -count
