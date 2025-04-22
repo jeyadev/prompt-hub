@@ -43,3 +43,16 @@ cluster IN ("*em-uk*")
 | where minutes_zero_free >= 15
 | table pod start_time end_time minutes_zero_free
 
+
+index="am_cds"
+cluster IN ("*em-uk*")
+"Took Connection, free Connections:"
+| rex field=_raw "free Connections:\s(?<free_connections>\d+)"
+| rex field=_raw "\"pod\":\"(?<pod>[^\"]+)\""
+| eval free_connections = tonumber(free_connections)
+| where free_connections=0
+| stats count by pod
+| where count >= 15
+| sort -count
+
+
