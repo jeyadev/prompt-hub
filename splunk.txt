@@ -25,3 +25,18 @@ cluster IN ("*em-uk*")
 | stats dc(pod) as unique_pod_count by free_connections_bucket
 | sort free_connections_bucket
 
+
+index="am_cds"
+cluster IN ("*em-uk*")
+"Took Connection, free Connections:"
+| rex field=_raw "free Connections:\s(?<free_connections>\d+)"
+| rex field=_raw "\"pod\":\"(?<pod>[^\"]+)\""
+| eval free_connections = tonumber(free_connections)
+| where free_connections=0
+| bin _time span=1m
+| stats count by pod _time
+| streamstats current=f window=15 count as consecutive_zero_minutes by pod
+| where consecutive_zero_minutes = 15
+| dedup pod
+| table pod consecutive_zero_minutes
+
