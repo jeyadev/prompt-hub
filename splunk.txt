@@ -34,9 +34,12 @@ cluster IN ("*em-uk*")
 | eval free_connections = tonumber(free_connections)
 | where free_connections=0
 | bin _time span=1m
-| stats count by pod _time
-| streamstats current=f window=15 count as consecutive_zero_minutes by pod
-| where consecutive_zero_minutes = 15
-| dedup pod
-| table pod consecutive_zero_minutes
+| sort pod _time
+| streamstats current=f last(_time) as prev_time by pod
+| eval diff_in_minutes = (_time - prev_time)/60
+| eval gap_flag = if(diff_in_minutes>1,1,0)
+| streamstats sum(gap_flag) as group_id by pod
+| stats min(_time) as start_time, max(_time) as end_time, count as minutes_zero_free by pod group_id
+| where minutes_zero_free >= 15
+| table pod start_time end_time minutes_zero_free
 
