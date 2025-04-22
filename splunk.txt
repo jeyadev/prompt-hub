@@ -6,3 +6,21 @@ cluster IN ("*em-uk*")
 | where free_connections < 2
 | stats count by pod
 | sort -count
+
+
+index="am_cds"
+cluster IN ("*em-uk*")
+"Took Connection, free Connections:"
+| rex field=_raw "free Connections:\s(?<free_connections>\d+)"
+| rex field=_raw "\"pod\":\"(?<pod>[^\"]+)\""
+| where free_connections < 11
+| eval free_connections_bucket = case(
+    free_connections >= 0 AND free_connections <= 1, "0-1",
+    free_connections >= 2 AND free_connections <= 3, "2-3",
+    free_connections >= 4 AND free_connections <= 5, "4-5",
+    free_connections >= 6 AND free_connections <= 7, "6-7",
+    free_connections >= 8 AND free_connections <= 9, "8-9",
+    free_connections == 10, "10"
+)
+| stats count by free_connections_bucket
+| sort free_connections_bucket
