@@ -1,0 +1,22 @@
+Subject: Embracing OpenTelemetry for Enhanced Application Monitoring
+Hi Team,
+This email outlines an exciting step forward in how we monitor and understand our applications. We're planning to integrate OpenTelemetry (OTel) directly into our Spring Boot application, building upon our existing Dynatrace monitoring. This move will bring significant advantages from an application monitoring perspective, empowering both our development and on-call teams.
+Advantages of Adopting OpenTelemetry:
+As discussed previously, integrating OpenTelemetry offers several key benefits:
+ * Deeper Insights for Troubleshooting: OTel allows us to instrument specific code paths and business logic, providing richer, more contextualized traces. This will significantly enhance our ability to pinpoint the root cause of issues during debugging and incident analysis.
+ * Improved Application Performance Understanding: We'll gain more granular visibility into the performance of individual components and operations, allowing us to proactively identify and address bottlenecks.
+ * More Targeted and Actionable Alerts: By adding custom attributes to our telemetry data, we can create more precise alerts that provide specific context about failures, reducing alert fatigue and enabling faster, more effective responses.
+ * Future-Proofing and Flexibility: OpenTelemetry is an open standard, giving us the flexibility to integrate with various observability backends in the future without requiring significant re-instrumentation. This prevents vendor lock-in and allows us to choose the best tools for our needs.
+ * Standardized Data for Better Collaboration: OTel provides a consistent data format, improving collaboration between development and operations teams and simplifying the analysis of application behavior across different systems.
+ * Empowering On-Call Engineers: The detailed and context-rich traces will equip our on-call engineers with the information they need for faster root cause analysis and quicker incident resolution, potentially reducing the need for immediate escalations.
+Enabling OpenTelemetry in Our Application:
+The necessary changes to enable OpenTelemetry in our application have been implemented and are currently available for review in the following Bitbucket branch in our UAT PBA environment:
+[Insert Bitbucket Branch Link Here]
+This branch includes the integration of the spring-boot-starter-opentelemetry dependency and the initial configuration required to generate and potentially export trace data.
+Next Steps:
+ * Review the Changes: Please take some time to review the changes in the provided Bitbucket branch. Pay close attention to how OpenTelemetry is being integrated and the initial instrumentation being implemented.
+ * Testing in UAT PBA: We will be closely monitoring the telemetry data generated in the UAT PBA environment. Your feedback on the granularity and usefulness of the initial traces will be invaluable.
+ * Discussion and Feedback: We will schedule a brief meeting soon to discuss these changes, gather your feedback, and address any questions you may have.
+We believe that adopting OpenTelemetry will significantly enhance our application monitoring capabilities, leading to more stable and performant applications and a smoother experience for our on-call team. Your active participation in reviewing and testing these changes is highly appreciated.
+Best regards,
+[Your Name/Team Lead Name]
