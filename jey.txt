@@ -1,5 +1,0 @@
-Upload Service response time: ↓ from 4.62s → 1.85s (▼49%)
-
-Download Service response time: ↓ from 3.28s → 1.36s (▼60%)
-
-Upload Service error rate: ↓ from 10.92% → 0.95% (▼90%)
