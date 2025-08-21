@@ -129,6 +129,7 @@ sequenceDiagram
   S-->>MQ: Publish {topic} (correlationId=..., headers=...)
   S->>X: {METHOD} {external/path}
   S-->>C: {status} {summary}
+```
 
 DISCOVERY STEPS (what I want you to do)
 
