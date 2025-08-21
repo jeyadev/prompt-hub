@@ -177,6 +177,14 @@ Prefer exact names and code-linked evidence over guesses. When uncertain, explic
 
 ---
 
+
+Here’s a drop‑in Copilot Chat prompt that (a) finds each endpoint, (b) traces every call (controllers → services → repos → external/MQ), (c) summarizes each method’s requirements (inputs, preconditions, contracts), and (d) writes a highly user‑intuitive Markdown doc using collapsible sections, tables, and Mermaid diagrams.
+
+
+---
+
+Copilot Prompt — Spring Boot Endpoint Call Map (per‑endpoint)
+
 ROLE
 You are a senior Spring Boot code-analysis assistant. Produce deterministic, evidence-linked results with file:line citations.
 
@@ -243,3 +251,100 @@ flowchart TD
   S1 -->|HTTP| X1[ExternalClient#call...]
   C --> S2[{ServiceB#op}]:::optional
   classDef optional stroke-dasharray: 3 3
+
+</details><details>
+<summary><strong>Happy-Path Sequence</strong></summary>sequenceDiagram
+  participant Client
+  participant C as Controller
+  participant S as Service(s)
+  participant DB as DB/Cache
+  participant MQ as MQ
+  participant EXT as External API
+
+  Client->>C: {METHOD} {PATH}
+  C->>S: {ServiceA#op}(key params)
+  S->>DB: read/write {Entity/Table}
+  S-->>MQ: publish {dest} (correlationId=...)
+  S->>EXT: {METHOD} {external/path}
+  C-->>Client: {status} {summary}
+
+</details>Methods Catalog
+
+#	Location (file:line)	Method	Purpose (1‑liner)	Requires (inputs & preconditions)	Side Effects	Throws/Errors	Txn
+
+1	src/.../OrderController.java:123	OrderController#getById(String id)	Load order and enrich	id != null, auth hasRole('USER')	none	NotFoundException	none
+2	src/.../OrderService.java:88	OrderService#load(String id)	Fetch order & status	id, feature orders.enabled=true	DB read	OrderMissingException	@Transactional(readOnly=true)
+3	src/.../OrderRepo.java:45	OrderRepo#findById(UUID)	JPA fetch	valid UUID	DB read	-	inherited
+4	src/.../MqPublisher.java:60	publish(OrderEvent)	Emit order event	non-null event; correlationId set	MQ publish to ${mq.orders-topic}	retries via @Retry	none
+5	src/.../BillingClient.java:72	charge(...)	Call billing API	token present; amount>0	HTTP POST to ${billing.base-url}/charge	HttpStatusCodeException	timeout=2s
+
+
+> Include every unique method in the path exactly once in this table. Add rows for caches, validators, AOP advice, and exception handlers if relevant.
+
+
+
+Endpoint Notes
+
+Validation & Security: {@Valid DTO constraints, @PreAuthorize rules, CORS, rate limits}
+
+Config Used: {property keys -> resolved values if safe} (redact secrets)
+
+Idempotency: {keys/headers used, dedupe strategies}
+
+Observability: {Micrometer metrics, span names/attributes, log events}
+
+Error Mapping: {@ExceptionHandler mappings to HTTP codes}
+
+
+Evidence
+
+Primary handler: relative/path/File.java:LINE
+
+Service chain: list all file:line
+
+Repositories/Queries: file:line (include @Query bodies)
+
+MQ/External: file:line + property keys
+
+
+INDEX FILE (docs/endpoints-calls/README.md)
+
+Title and generated timestamp (UTC).
+
+Table of all endpoints with links to per-endpoint pages:
+
+
+Method	Path	Handler	File:Line	Auth	Calls Doc
+
+
+
+QUALITY GATES
+
+Every fact has at least one file:line citation.
+
+Summaries are specific and action-oriented (avoid vague “handles logic”).
+
+Sort methods in catalog by call order; sort endpoints by path then method.
+
+Mark uncertainty as unknown or dynamic(...) with cited symbol.
+
+Resolve config values from application*.yml or @ConfigurationProperties; if unresolved, show the key and where defined.
+
+Redact secrets.
+
+
+WRITE FILES
+
+Create/overwrite Markdown files. If file writes are not supported, print the full content with filenames for manual save.
+
+
+---
+
+## Why this output is the most intuitive
+- **Collapsible sections** (`<details>`): skim at a glance, expand for depth.
+- **Two diagrams, two views**: *flowchart* for structure (what calls what), *sequence* for order (how a request actually runs).
+- **Methods Catalog table**: one‑row‑per‑method checklist of “what it needs” and “what it does”—perfect for reviews and audits.
+- **Evidence‑first**: every row has `file:line`, keeping it trustworthy and easy to navigate in code.
+- **SRE‑friendly extras**: highlights idempotency, resilience, telemetry, and config—all critical for operability.
+ 
+
