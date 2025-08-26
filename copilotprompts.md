@@ -348,3 +348,268 @@ Create/overwrite Markdown files. If file writes are not supported, print the ful
 - **SRE‑friendly extras**: highlights idempotency, resilience, telemetry, and config—all critical for operability.
  
 
+
+---
+
+Master Prompt (curious/exhaustive dependency discovery)
+
+You are running locally inside VS Code with access to the full workspace.
+
+Goal (POC): For the Java Spring Boot upload flow, generate:
+
+1. docs/upload-flow.md – full narrative with code pointers and all external dependencies
+
+
+2. diagrams/upload-sequence.mmd – Mermaid sequence diagram
+
+
+3. diagrams/upload-graph.mmd – Mermaid dependency graph
+
+
+
+Scope & Safety
+
+Local workspace only. No network calls.
+
+Idempotent: if files exist, overwrite them.
+
+Prefer facts from code; when uncertain, add to “Gaps & Questions” with evidence.
+
+
+
+---
+
+What to Detect (be curious; go beyond MQ & CM)
+
+A. Ingress & Core path (upload)
+
+Spring MVC/WebFlux controller for upload (e.g., @PostMapping("/v1/upload"), @RequestMapping(method=POST, path="/v1/upload")).
+
+
+B. Messaging
+
+IBM MQ/JMS producers: JmsTemplate.convertAndSend(...), wrappers, MessageProducer.
+
+IBM MQ/JMS consumers: @JmsListener(destination="..."), MessageListener.
+
+Also scan for other brokers (even if unlikely): Kafka (KafkaTemplate, @KafkaListener), RabbitMQ (RabbitTemplate, @RabbitListener). If found, include.
+
+
+C. HTTP/gRPC/SOAP externals
+
+REST clients: RestTemplate, WebClient, @FeignClient, OkHttpClient, Apache HttpClient.
+
+gRPC: ManagedChannelBuilder, generated stubs.
+
+SOAP: JaxWsPortProxyFactoryBean, WebServiceTemplate.
+
+Identify service name/host/base path, operation (guess from method/URI), and client class/method.
+
+
+D. Data stores & caches
+
+Relational DB: DataSource, JdbcTemplate, JPA (EntityManager, CrudRepository/JpaRepository).
+
+NoSQL: Mongo (MongoTemplate, repositories), Cassandra, DynamoDB.
+
+Search: Elasticsearch/Solr clients.
+
+Caches: Redis (Lettuce/Jedis, RedisTemplate), Hazelcast, Ehcache, Caffeine.
+
+
+E. Object/file storage & filesystems
+
+S3/MinIO SDK, GCS, Azure Blob, NFS/Samba paths, local FS writes for payloads/temp files.
+
+FTP/SFTP libraries.
+
+
+F. Security, identity, feature/config
+
+OAuth/OpenID (Spring Security, OAuth2AuthorizedClientManager), LDAP.
+
+Feature flags: Unleash, FF4J, LaunchDarkly.
+
+Config servers/secrets: Spring Cloud Config, Vault, KMS usage.
+
+
+G. Infra & utilities that cross boundaries
+
+Email/SMS/Push: JavaMail/SMTP, SNS/SQS, Twilio, FCM.
+
+PDF/AV/DLP/ICAP: antivirus (ClamAV/ICAP), DLP scanners, PDF services.
+
+Shell/system calls: ProcessBuilder, Runtime.exec.
+
+Schedulers: @Scheduled, Quartz (if they trigger upload steps).
+
+
+> For everything discovered, capture type, library used, identifier (queue, topic, URL, table, bucket), file:line, and evidence snippet (one line is enough).
+
+
+
+
+---
+
+Required Outputs (overwrite if exist)
+
+1) docs/upload-flow.md
+
+Structure:
+
+# Upload Flow (POC)
+
+## TL;DR
+One-paragraph summary of POST /v1/upload end-to-end, including key external dependencies found.
+
+## Code Entry Point (Ingress)
+- Route & method (e.g., `POST /v1/upload`)
+- Controller class & method with **file:line** reference(s)
+
+## Sequence of Events (Step-by-step)
+1) Client → Gateway (controller): validations/transforms.
+2) Gateway → MQ (producer): destination, message shape (if visible).
+3) Worker (consumer): class & method, main logic.
+4) Worker → IBM Content Manager (CM): operation & path.
+5) **Other externals discovered** (DB/cache/object storage/HTTP calls/etc.): describe where they fit in the upload path.
+- Provide **file:line** for each step; include a one-line **evidence snippet** where helpful.
+
+## External Dependencies (Comprehensive)
+| Category     | Tech/Lib             | Identifier (queue/url/table/…) | Where Found (file:line) | Role in Upload | Notes |
+|--------------|----------------------|---------------------------------|-------------------------|----------------|-------|
+| Messaging    | IBM MQ (JMS)         | …                               | …                       | produce/consume| …     |
+| External API | IBM CM (REST/SOAP)   | …                               | …                       | createDocument | …     |
+| REST Client  | (others, if any)     | …                               | …                       | …              | …     |
+| DB           | (JPA/JdbcTemplate)   | …                               | …                       | meta writes?   | …     |
+| Cache        | (Redis/Ehcache/…)    | …                               | …                       | …              | …     |
+| ObjectStore  | (S3/MinIO/GCS/NFS)   | …                               | …                       | …              | …     |
+| Auth/Config  | (OAuth/Vault/Config) | …                               | …                       | …              | …     |
+| Scheduler    | (Quartz/@Scheduled)  | …                               | …                       | …              | …     |
+| Other        | (Email/ICAP/…)       | …                               | …                       | …              | …     |
+
+## Config Keys
+List all relevant properties (routes, MQ destinations, hosts, credentials refs, timeouts, retries), with **file:line**.
+
+## Data Contracts (as known)
+- HTTP request: headers/body essentials.
+- MQ message: headers (trace/context) & payload outline.
+- CM request/response: fields used downstream.
+
+## Resilience & Policies (if present)
+- Timeouts, retries, circuit breakers (Resilience4j annotations/config), bulkheads, fallbacks (with **file:line**).
+
+## Gaps & Questions
+- Ambiguities or multiple possible paths; what to confirm with devs.
+
+## Next Steps
+- What to automate next for the flow spec and diagrams.
+
+2) diagrams/upload-sequence.mmd
+
+Create a valid Mermaid sequence diagram that reflects everything found. Include “other externals” as separate participants if they participate in the request path.
+
+Skeleton to fill with real names:
+
+sequenceDiagram
+  autonumber
+  participant C as Client
+  participant GW as Gateway (POST /v1/upload)
+  participant MQ as IBM MQ (QUEUE: <name>)
+  participant WK as Worker
+  participant CM as IBM Content Manager
+  %% Optional discovered participants
+  participant DB as Database
+  participant OS as Object Store
+  participant EXT as External API (Other)
+
+  C->>GW: POST /v1/upload
+  GW->>GW: Validate/Transform (mention AV/DLP if any)
+  GW->>MQ: Publish (destination, headers)
+  WK-->>MQ: Consume
+  WK->>CM: createDocument(...)
+  CM-->>WK: Response (docId/…)
+  WK->>DB: Persist metadata (if any)
+  WK->>OS: Store content (if any)
+  WK-->>GW: Ack/Update
+  GW-->>C: 202 Accepted / 200 OK
+
+3) diagrams/upload-graph.mmd
+
+Create a valid Mermaid LR flowchart of nodes/edges using stable IDs (UPPER_SNAKE with dots allowed). Include newly discovered externals as nodes.
+
+flowchart LR
+  A[UPLOAD.API.INGRESS<br/>POST /v1/upload] --> B[UPLOAD.VALIDATE]
+  B --> C((MQ: <QUEUE>))
+  C --> D[UPLOAD.WORKER.CONSUME]
+  D --> E[UPLOAD.CM.API<br/>createDocument]
+  D --> F[(DB: <table>)]
+  D --> G[(ObjectStore: <bucket/path>)]
+  %% Add other external edges if they exist
+
+Only include nodes/edges that actually exist; no placeholders.
+
+
+---
+
+How to Gather Evidence (search heuristics)
+
+Search code & configs (Java/Kotlin/YAML/properties/XML):
+
+Spring MVC/WebFlux: @PostMapping, @RequestMapping, RouterFunction, HandlerFunction.
+
+JMS (IBM MQ): JmsTemplate.convertAndSend, @JmsListener, DefaultJmsListenerContainerFactory, MQQueue, MQQueueManager, com.ibm.mq.
+
+Kafka/Rabbit (just in case): KafkaTemplate, @KafkaListener, RabbitTemplate, @RabbitListener.
+
+HTTP clients: RestTemplate, WebClient, @FeignClient, OkHttpClient, Apache HttpClients, HttpUrlConnection.
+
+gRPC/SOAP: ManagedChannelBuilder, generated stubs, WebServiceTemplate, JAX-WS proxies.
+
+DB: DataSource, JdbcTemplate, EntityManager, Repository interfaces, @Table, SQL files.
+
+Cache: RedisTemplate, Lettuce, Jedis, Hazelcast, Ehcache, Caffeine.
+
+Object storage: AmazonS3, MinioClient, BlobServiceClient, Files.copy to network paths.
+
+Security/Config: Spring Security OAuth2 classes, VaultTemplate, ConfigServicePropertySourceLocator.
+
+Resilience: @Retry, @CircuitBreaker, @TimeLimiter, config keys resilience4j.*.
+
+Schedulers: @Scheduled, Quartz Scheduler.
+
+Misc. externals: JavaMail Transport.send, ProcessBuilder, Runtime.exec, FTP/SFTP libs.
+
+
+When you find a candidate:
+
+Record category, library, identifier (queue/url/table/bucket), file:line, and a 1-line snippet (e.g., the call or annotation).
+
+If multiple candidates exist, prefer the ones directly in the upload path; list alternates under Gaps & Questions.
+
+
+
+---
+
+Acceptance Criteria
+
+All three files are created and render correctly (Mermaid has no syntax errors).
+
+docs/upload-flow.md includes at least:
+
+One http_server (upload route) with file:line,
+
+One mq_produce and one mq_consume with destinations and file:line,
+
+One external_api call to CM with file:line,
+
+Any other external dependency found (DB/cache/object store/other REST/etc.) with file:line, or an explicit “None found” statement.
+
+
+Doc includes Config Keys and Resilience (if present).
+
+Ambiguities are captured in Gaps & Questions with evidence.
+
+
+Now execute the above using the workspace code to drive specifics. If something is unclear, include it in Gaps & Questions with the best hypotheses and evidence.
+
+ 
