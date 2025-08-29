@@ -1,0 +1,263 @@
+Here’s a **plug-and-play “master prompt + data JSON”** that lets a slide-deck LLM build the whole story end-to-end, consistently using the **Category → Action → Outcome (KPI/OKR)** spine. It’s opinionated, constraint-heavy, and built to outperform generic prompts.
+
+# Solution
+
+### 1) Master Prompt (copy-paste)
+
+```
+You are an executive slide-deck architect. Produce a McKinsey-style deck from the JSON payload <deck_data>. 
+Strictly follow this storyline and mapping rules:
+
+STORYLINE (order is mandatory)
+1) Executive Summary
+2) H1 Challenges (5 categories)
+3) Corrective Measures (by category)
+4) Mapping Bridge: Category → Measures → Outcomes (with metrics)
+5) Reliability Outcomes (before/after + % change)
+6) Top Consumers (volume share; call mix)
+7) System Reliability Trends (Incidents, MTTR, MTBF)
+8) Engagement Model (Champions forum; cadence)
+9) H2 Goals (Objective → Key Results → Planned Actions)
+10) H2 Goals → Expected Outcomes table (OKRs)
+11) Benefits of H2 (aligned to the same categories)
+12) Closing / Commitments (OKR targets as forward contract)
+
+MAPPING RULES
+- Every action must be attached to exactly one category.
+- Every outcome must have at least one measurable KPI; if none exist in <deck_data>, label it “qualitative”.
+- Draw lines across slides: use the same category name + color tag everywhere.
+
+FORMATTING
+- Each slide: headline + 2–4 crisp bullets (max 5). Bold metrics; use → for before/after.
+- No filler text. Each headline answers “so what”.
+- Use the provided color tags: they must be consistent across all slides.
+
+CHARTS
+- Where <deck_data.chart_requests> exists, request those visuals (bar/line tables) and label axes and units.
+- Do not invent values. Only compute simple deltas/percent with standard formulas and round to 1–2 decimals.
+
+GUARDRAILS
+- No hallucinations. If a referenced value is missing, state “data not provided” and keep moving.
+- Keep acronyms expanded on first use (e.g., MTTR = Mean Time To Resolve).
+- Keep the narrative business-first: impact on reliability, consumers, and operations.
+
+OUTPUT
+- Return slides as a structured outline:
+  - Slide N: <Title>
+    - <bullet 1>
+    - <bullet 2>
+    - …
+  - For each chart: “Chart: <type> — <what vs what> (source: <deck_data path>)”
+```
+
+---
+
+### 2) Data JSON schema (you can reuse this structure for future decks)
+
+```json
+{
+  "meta": {
+    "title": "CDS Reliability: H1 Outcomes & H2 Goals",
+    "periods": { "h1": "Jan–Jun 2025", "h2": "Jul–Dec 2025" },
+    "category_colors": {
+      "Connection": "blue",
+      "Apigee": "teal",
+      "Performance": "orange",
+      "Infrastructure": "purple",
+      "Auth": "red"
+    }
+  },
+  "h1": {
+    "challenges": [
+      {"category": "Connection", "summary": "Connection failures and pool refresh constraints impacted CM access."},
+      {"category": "Apigee", "summary": "NADC migration caused regional latency issues (EMEA/APAC)."},
+      {"category": "Performance", "summary": "Consumers reported increased latency in request completion."},
+      {"category": "Infrastructure", "summary": "Disk/memory exhaustion created bottlenecks."},
+      {"category": "Auth", "summary": "401/403 errors and account lockouts."}
+    ],
+    "measures_by_category": {
+      "Connection": [
+        "GKP Startup Probe at POD level to validate CM connectivity",
+        "Scale up CM connections on CDS (Store & Find)"
+      ],
+      "Apigee": [
+        "Engage critical clients to use Heritage endpoints",
+        "Sustain support for APIGEE DCs in APAC and EMEA"
+      ],
+      "Performance": [
+        "Query optimization (revised default search, reduce regex like '%')",
+        "Removal of legacy folder linker",
+        "Encourage 'doc_type' in download requests"
+      ],
+      "Infrastructure": [
+        "Twice-daily health checks (APAC & EMEA)",
+        "Real-time golden-signal dashboards",
+        "AIOps360 to surface hidden bottlenecks"
+      ],
+      "Auth": [
+        "AppStatus 2.0 onboarding with certified SLO/CUJ for IPB",
+        "Enhanced monitoring for 401/403 and lockouts"
+      ]
+    },
+    "outcomes_by_category": {
+      "Connection": [
+        {"kpi": "CDS connection issues contributing to error rate", "before": "20%", "after": "~0%", "delta_pct": "~100% improvement"},
+        {"kpi": "Upload error rate", "before": "10.92%", "after": "0.95%", "delta_pct": "≈90% improvement"}
+      ],
+      "Apigee": [
+        {"kpi": "Download service response time", "before": "3.28s", "after": "1.36s", "delta_pct": "60% faster"}
+      ],
+      "Performance": [
+        {"kpi": "Upload service response time", "before": "4.62s", "after": "1.85s", "delta_pct": "49.39% faster"}
+      ],
+      "Infrastructure": [
+        {"kpi": "Monthly incident count (peak vs stabilized)", "before": "26 (Feb)", "after": "9 (May/Jun)", "delta_pct": "65.38% reduction"},
+        {"kpi": "MTTR (hours)", "before": "1358.63 (Jan)", "after": "77.28 (Feb)", "delta_pct": "94.31% reduction"},
+        {"kpi": "MTBF (hours)", "before": "25.85 (Feb)", "after": "82.67 (May)", "delta_pct": "68.72% increase"}
+      ],
+      "Auth": [
+        {"kpi": "Auth error escalations", "note": "Qualitative improvement; counts not provided"}
+      ]
+    },
+    "top_consumers": {
+      "unit": "calls (H1 total for each app)",
+      "apps": [
+        {"name": "DOCVIEWR", "upload": 0, "download": 265934, "find": 414802, "total": 680736, "share_pct_of_top10": 39.72},
+        {"name": "GTA", "upload": 339685, "download": 62482, "find": 557, "total": 402724, "share_pct_of_top10": 23.50},
+        {"name": "JPOI", "upload": 382, "download": 182831, "find": 449, "total": 183662, "share_pct_of_top10": 10.72},
+        {"name": "COBKYC", "upload": 4715, "download": 24866, "find": 121508, "total": 151089, "share_pct_of_top10": 8.82},
+        {"name": "IPBPAYMENT", "upload": 17412, "download": 28905, "find": 71271, "total": 117588, "share_pct_of_top10": 6.86},
+        {"name": "IPBSTMT", "upload": 54277, "download": 0, "find": 0, "total": 54277, "share_pct_of_top10": 3.17},
+        {"name": "ALTSDOCS", "upload": 47838, "download": 1293, "find": 0, "total": 49131, "share_pct_of_top10": 2.87},
+        {"name": "USWHT", "upload": 0, "download": 0, "find": 41886, "total": 41886, "share_pct_of_top10": 2.44},
+        {"name": "DOCTRACKER", "upload": 21813, "download": 0, "find": 0, "total": 21813, "share_pct_of_top10": 1.27},
+        {"name": "SUITABLIPB", "upload": 3272, "download": 1898, "find": 5594, "total": 10764, "share_pct_of_top10": 0.63}
+      ],
+      "top10_total": 1713670
+    },
+    "trends": {
+      "monthly_incidents": {"Feb": 26, "Apr": 14, "May": 9, "Jun": 9},
+      "mttr_hours_by_month": {"Jan": 1358.63, "Feb": 77.28, "Mar": 924.70, "Apr": 911.92, "May": 306.66, "Jun": 353.83},
+      "mtbf_hours_by_month": {"Jan": 53.14, "Feb": 25.85, "Mar": 31.00, "Apr": 51.43, "May": 82.67, "Jun": 80.00}
+    }
+  },
+  "h2": {
+    "goals": [
+      {
+        "category": "Apigee",
+        "objective": "Minimize Apigee-related disruptions",
+        "key_results": [
+          {"kr": "Reduce Apigee incident count vs H1", "target": "-50%"},
+          {"kr": "Median API latency improvement in APAC/EMEA", "target": "-30%"},
+          {"kr": "Client adoption of exponential backoff", "target": "≥80%"}
+        ],
+        "planned_actions": [
+          "Root-cause elimination & policy enforcement for retries/backoff",
+          "Maintain Heritage fallback for critical flows"
+        ]
+      },
+      {
+        "category": "Monitoring",
+        "objective": "Mature observability & early warning",
+        "key_results": [
+          {"kr": "OpenTelemetry coverage of services", "target": "≥90%"},
+          {"kr": "Mean Time To Resolve (MTTR)", "target": "< 48 hours"},
+          {"kr": "Dynatrace SaaS migration", "target": "100% in-scope services"}
+        ],
+        "planned_actions": [
+          "Integrate OpenTelemetry signals",
+          "Automated health reports via Grafana 11",
+          "AIOps360 signal ingestion"
+        ]
+      },
+      {
+        "category": "User Experience",
+        "objective": "Improve onboarding & customer journey",
+        "key_results": [
+          {"kr": "Onboarding-related ticket volume", "target": "-20%"},
+          {"kr": "Adoption of AppStatus 2.0 among key consumers", "target": "≥80%"}
+        ],
+        "planned_actions": [
+          "Enhance AppStatus 2.0 journey",
+          "Formalize SRE governance & incident cadence"
+        ]
+      },
+      {
+        "category": "Performance",
+        "objective": "AI-driven resilience & service-level optimization",
+        "key_results": [
+          {"kr": "Peak-hour backend errors", "target": "-30%"},
+          {"kr": "P95 request latency on Upload/Download", "target": "-20%"}
+        ],
+        "planned_actions": [
+          "LLM-assisted code-level perf fixes",
+          "OneAgent version upgrade automation",
+          "Introduce AIOps360 into SOW; Davis AI for app monitoring"
+        ]
+      }
+    ]
+  },
+  "engagement": {
+    "champions_forum": {
+      "cadence": "Monthly",
+      "scope": "Top 10–20 high-volume consumers",
+      "purpose": "Share insights, pre-empt issues, co-own OKRs"
+    }
+  },
+  "chart_requests": [
+    {"slide": "Reliability Outcomes", "type": "bar", "series": [
+      {"name": "Upload RT (s)", "before": 4.62, "after": 1.85},
+      {"name": "Download RT (s)", "before": 3.28, "after": 1.36},
+      {"name": "Upload Error Rate (%)", "before": 10.92, "after": 0.95},
+      {"name": "CDS Conn Issues to Error Rate (%)", "before": 20, "after": 0}
+    ]},
+    {"slide": "System Reliability Trends", "type": "line", "series": [
+      {"name": "Incidents (per month)", "points": [["Feb",26],["Apr",14],["May",9],["Jun",9]]},
+      {"name": "MTTR (hours)", "points": [["Jan",1358.63],["Feb",77.28],["Mar",924.70],["Apr",911.92],["May",306.66],["Jun",353.83]]},
+      {"name": "MTBF (hours)", "points": [["Jan",53.14],["Feb",25.85],["Mar",31.00],["Apr",51.43],["May",82.67],["Jun",80.00]]}
+    ]},
+    {"slide": "Top Consumers", "type": "bar", "series": [
+      {"name": "Total Calls by App", "points": [
+        ["DOCVIEWR",680736],["GTA",402724],["JPOI",183662],["COBKYC",151089],["IPBPAYMENT",117588],
+        ["IPBSTMT",54277],["ALTSDOCS",49131],["USWHT",41886],["DOCTRACKER",21813],["SUITABLIPB",10764]
+      ]}
+    ]}
+  ]
+}
+```
+
+> Use: wrap the schema + your filled data as `deck_data` and paste together with the Master Prompt.
+
+---
+
+# Data Reasoning
+
+* The schema enforces the **single source of truth** for numbers and prevents hallucinations.
+* Outcomes are explicitly typed as **before/after** so the LLM can compute deltas consistently (and we also supply the stated % to keep parity with your slides).
+* Consumers include pre-computed **share\_pct\_of\_top10** and **top10\_total** so the deck can show Pareto-style insights without recomputation.
+* H2 uses **Objective → Key Results (targets) → Actions** to mirror H1’s **Category → Measures → Outcomes**.
+
+# Systems Analysis
+
+* Mapping discipline avoids “floating bullets” that reviewers flagged.
+* Color tags, shared across sections, act as visual joins, reducing cognitive load.
+* Risks: if future data arrives with different units (ms vs s, counts vs %), the LLM may mix formats. The schema forces units into the value strings (or numeric + unit in labels), mitigating that.
+
+# Validation & Simulation
+
+Have the model (or you) run these checks before rendering:
+
+* `sum(app.total) == top10_total` (else flag data integrity).
+* For every outcome with `before` and `after`, compute `(before-after)/before` and compare to `delta_pct` (tolerance ±2%).
+* Ensure each `measures_by_category[k]` maps to at least one `outcomes_by_category[k]`.
+* H2: every goal object must include ≥1 `key_results` with numeric targets or clear thresholds.
+
+# Ops-Ready Summary
+
+* **Deliverable:** One master prompt + machine-readable JSON that drives a full, consistent deck.
+* **Backbone:** Category → Action → Outcome with strict color continuity.
+* **Proof:** Embedded H1 metrics (latency, error, incidents, MTTR/MTBF) + consumer volumes.
+* **Forward path:** H2 Objectives with OKR targets and actions, plus Champions forum.
+* **Risk notes:** Watch units, rounding, and any missing data—schema and validation steps catch drift.
+
+When you’re ready, swap any placeholder targets in H2 with your final OKRs and hit generate.
