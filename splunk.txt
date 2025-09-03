@@ -18,3 +18,83 @@ index="am_cds" "Dispatching event to MQ for codeEvent"
 | stats count by platform
 | sort -count
 
+
+
+Great — now that we’ve nailed the `cds:PLATFORM`, we can apply the **same `rex`-based technique** to extract:
+
+1. `cds:RequestStatus.value`
+2. `cds:APPLICATION.value`
+3. `cds:RequestStatusDescription.value`
+
+---
+
+## ✅ Template Logic for Each Field
+
+The base pattern we’ll reuse:
+
+```spl
+"cds:<FIELD_NAME>\"\s*:\s*\{[^\}]*\"value\"\s*:\s*\"(?<your_field>[^\"]+)"
+```
+
+We’ll just replace `<FIELD_NAME>` and the `field` name.
+
+---
+
+### 1️⃣ **Extract `cds:RequestStatus.value`**
+
+```spl
+index="am_cds" "Dispatching event to MQ for codeEvent"
+| rex field=_raw "payload\s+(?P<json_payload>\{.*)"
+| rex field=json_payload "\"cds:RequestStatus\"\s*:\s*\{[^\}]*\"value\"\s*:\s*\"(?<request_status>[^\"]+)\""
+| stats count by request_status
+| sort -count
+```
+
+---
+
+### 2️⃣ **Extract `cds:APPLICATION.value`**
+
+```spl
+index="am_cds" "Dispatching event to MQ for codeEvent"
+| rex field=_raw "payload\s+(?P<json_payload>\{.*)"
+| rex field=json_payload "\"cds:APPLICATION\"\s*:\s*\{[^\}]*\"value\"\s*:\s*\"(?<application>[^\"]+)\""
+| stats count by application
+| sort -count
+```
+
+---
+
+### 3️⃣ **Extract `cds:RequestStatusDescription.value`**
+
+```spl
+index="am_cds" "Dispatching event to MQ for codeEvent"
+| rex field=_raw "payload\s+(?P<json_payload>\{.*)"
+| rex field=json_payload "\"cds:RequestStatusDescription\"\s*:\s*\{[^\}]*\"value\"\s*:\s*\"(?<status_description>[^\"]+)\""
+| stats count by status_description
+| sort -count
+```
+
+---
+
+## 📦 Want All in One Table?
+
+If you'd like to extract all 4 fields (Platform, RequestStatus, Application, Description) in one go for reporting or dashboards, let me know — I’ll combine them into one unified query.
+
+
+index="am_cds" "Dispatching event to MQ for codeEvent"
+| rex field=_raw "payload\s+(?P<json_payload>\{.*)"
+
+| rex field=json_payload "\"cds:PLATFORM\"\s*:\s*\{[^\}]*\"value\"\s*:\s*\"(?<platform>[^\"]+)"
+| rex field=json_payload "\"cds:RequestStatus\"\s*:\s*\{[^\}]*\"value\"\s*:\s*\"(?<request_status>[^\"]+)"
+| rex field=json_payload "\"cds:APPLICATION\"\s*:\s*\{[^\}]*\"value\"\s*:\s*\"(?<application>[^\"]+)"
+| rex field=json_payload "\"cds:RequestStatusDescription\"\s*:\s*\{[^\}]*\"value\"\s*:\s*\"(?<status_description>[^\"]+)\""
+
+| stats count by platform, request_status, application, status_description
+| sort -count
+
+
+
+
+
+
+
