@@ -1,0 +1,108 @@
+Widget,Chart Type,SPL
+Total Events,Single Value,"index=""am_cds"" ""Dispatching event to MQ for codeEvent""
+$time_token$
+| stats count"
+Unique Platforms,Single Value,"index=""am_cds"" ""Dispatching event to MQ for codeEvent""
+$time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:PLATFORM\"".*?\""value\"":\""(?<platform>[^\""]+)""
+| stats dc(platform)"
+Skipped Requests,Single Value (Red if > 0),"index=""am_cds"" ""Dispatching event to MQ for codeEvent""
+$time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:RequestStatus\"".*?\""value\"":\""(?<request_status>[^\""]+)""
+| search request_status=""GBDS_SKIP""
+| stats count"
+Events by Platform,Bar Chart (Horizontal),"index=""am_cds"" ""Dispatching event to MQ for codeEvent""
+$time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:PLATFORM\"".*?\""value\"":\""(?<platform>[^\""]+)""
+| stats count by platform
+| sort -count"
+Events by Application,Bar Chart (Vertical),"index=""am_cds"" ""Dispatching event to MQ for codeEvent""
+$time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:APPLICATION\"".*?\""value\"":\""(?<application>[^\""]+)""
+| stats count by application
+| sort -count"
+Request Status Breakdown,Pie Chart,"index=""am_cds"" ""Dispatching event to MQ for codeEvent""
+$time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:RequestStatus\"".*?\""value\"":\""(?<request_status>[^\""]+)""
+| stats count by request_status"
+Event Volume Over Time,Timechart (Line),"index=""am_cds"" ""Dispatching event to MQ for codeEvent""
+$time_token$
+| timechart span=1h count"
+Skipped Requests Over Time,Timechart (Area),"index=""am_cds"" ""Dispatching event to MQ for codeEvent""
+$time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:RequestStatus\"".*?\""value\"":\""(?<request_status>[^\""]+)""
+| search request_status=""GBDS_SKIP""
+| timechart span=1h count"
+Status Description Frequency,Table or Treemap,"index=""am_cds"" ""Dispatching event to MQ for codeEvent""
+$time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:RequestStatusDescription\"".*?\""value\"":\""(?<status_description>[^\""]+)""
+| stats count by status_description
+| sort -count"
+Top Platforms with Skipped Status,Bar Chart,"index=""am_cds"" ""Dispatching event to MQ for codeEvent""
+$time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:PLATFORM\"".*?\""value\"":\""(?<platform>[^\""]+)""
+| rex field=json_payload ""\""cds:RequestStatus\"".*?\""value\"":\""(?<request_status>[^\""]+)""
+| search request_status=""GBDS_SKIP""
+| stats count by platform
+| sort -count"
+Last 50 Events,Data Table,"index=""am_cds"" ""Dispatching event to MQ for codeEvent""
+$time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:PLATFORM\"".*?\""value\"":\""(?<platform>[^\""]+)""
+| rex field=json_payload ""\""cds:APPLICATION\"".*?\""value\"":\""(?<application>[^\""]+)""
+| rex field=json_payload ""\""cds:RequestStatus\"".*?\""value\"":\""(?<request_status>[^\""]+)""
+| rex field=json_payload ""\""cds:RequestStatusDescription\"".*?\""value\"":\""(?<status_description>[^\""]+)""
+| table _time platform application request_status status_description
+| sort -_time
+| head 50"
+Error Rate %,Single Value,"index=""am_cds"" ""Dispatching event to MQ for codeEvent"" $time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:RequestStatus\"".*?\""value\"":\""(?<request_status>[^\""]+)""
+| eventstats count as total
+| search request_status=""GBDS_SKIP""
+| stats count as skipped
+| eval error_rate=round(skipped/total*100, 2)"
+Platform with Most Errors,Single Value,"index=""am_cds"" ""Dispatching event to MQ for codeEvent"" $time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:PLATFORM\"".*?\""value\"":\""(?<platform>[^\""]+)""
+| rex field=json_payload ""\""cds:RequestStatus\"".*?\""value\"":\""(?<request_status>[^\""]+)""
+| search request_status=""GBDS_SKIP""
+| stats count by platform
+| sort -count
+| head 1"
+App-Status Matrix,Heatmap/Table,"index=""am_cds"" ""Dispatching event to MQ for codeEvent"" $time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:APPLICATION\"".*?\""value\"":\""(?<application>[^\""]+)""
+| rex field=json_payload ""\""cds:RequestStatus\"".*?\""value\"":\""(?<request_status>[^\""]+)""
+| stats count by application request_status"
+Platform Volume Over Time (Top 5),Timechart (Line),"index=""am_cds"" ""Dispatching event to MQ for codeEvent"" $time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:PLATFORM\"".*?\""value\"":\""(?<platform>[^\""]+)""
+| timechart span=1h count by platform limit=5"
+Error Rate Over Time,Timechart (Line),"index=""am_cds"" ""Dispatching event to MQ for codeEvent"" $time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:RequestStatus\"".*?\""value\"":\""(?<request_status>[^\""]+)""
+| eval status=if(request_status=""GBDS_SKIP"", ""error"", ""ok"")
+| timechart span=1h count by status
+| eval error_rate=round(error/(error+ok)*100, 2)"
+Common Skipped Reasons by Application,Table,"index=""am_cds"" ""Dispatching event to MQ for codeEvent"" $time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:APPLICATION\"".*?\""value\"":\""(?<application>[^\""]+)""
+| rex field=json_payload ""\""cds:RequestStatus\"".*?\""value\"":\""(?<request_status>[^\""]+)""
+| rex field=json_payload ""\""cds:RequestStatusDescription\"".*?\""value\"":\""(?<status_description>[^\""]+)""
+| search request_status=""GBDS_SKIP""
+| stats count by application status_description
+| sort -count"
+New/Unknown Status Descriptions,Table,"index=""am_cds"" ""Dispatching event to MQ for codeEvent"" $time_token$
+| rex field=_raw ""payload\s+(?P<json_payload>\{.*)""
+| rex field=json_payload ""\""cds:RequestStatusDescription\"".*?\""value\"":\""(?<status_description>[^\""]+)""
+| stats count by status_description
+| search NOT status_description IN (""expected1"", ""expected2"")"
