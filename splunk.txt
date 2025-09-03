@@ -7,3 +7,6 @@ index="am_cds" "Dispatching event to MQ for codeEvent"
 | rex field=_raw "payload.*?(?<json_payload>\{.*)"
 | table _time json_payload
 
+index="am_cds" "Dispatching event to MQ for codeEvent"
+| rex field=_raw "payload\s+(?P<json_payload>\{.*)"
+| table _time json_payload
