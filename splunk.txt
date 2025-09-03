@@ -2,3 +2,9 @@ index="am_cds" "Dispatching event to MQ for codeEvent"
 | rex field=_raw "\"cds\.PLATFORM\"\s*:\s*\{[^}]*\"value\"\s*:\s*\"(?<platform>[^\"]+)\"" 
 | stats count by platform
 | sort -count
+
+index="am_cds" "Dispatching event to MQ for codeEvent"
+| rex field=_raw "payload\s*\((?<json_payload>\{.*\})\)"
+| spath input=json_payload path=properties.cds.PLATFORM.value output=platform
+| stats count by platform
+| sort -count
