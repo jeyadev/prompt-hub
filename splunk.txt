@@ -1,1 +1,1 @@
-rex field=json_payload "\"cds:PLATFORM\"\\s*:\\s*\\{[^\\}]*\"value\"\\s*:\\s*\"(?<platform>[^\"]+)\""
+| rex field=_raw "(?s)payload\s+(?P<json_payload>\{.*)"
