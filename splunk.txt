@@ -1,1 +1,7 @@
-| rex field=_raw "(?s)payload\s+(?P<json_payload>\{.*)"
+index="am_cds" "Dispatching event to MQ for codeEvent"
+| rex mode=sed field=_raw "s/\\n/ /g"
+| rex field=_raw "payload\\s+(?<json_payload>\\{.*)"
+| rex field=json_payload "\"cds:PLATFORM\".*?\"value\":\"(?<platform>[^\"]+)"
+| rex field=json_payload "\"cds:RequestStatus\".*?\"value\":\"(?<request_status>[^\"]+)"
+| where isnull(platform)
+| table _time request_status platform json_payload
