@@ -46,4 +46,10 @@ SLIDE 8 — Plan, Price, Perils (one slide)
 
 SLIDE 9 — Next Step
 - Ask: “Approve 2-service pilot (checkout, catalog) and Jira/CI access by [Date].”
-- Owners: Decision—[Director Name]; Execution—
+- Owners: Decision—[Director Name]; Execution—[Your Name]
+
+GLOBAL
+- Consistent icons (code, CI, diagram, YAML, alert, Jira, Bitbucket)
+- No dense code; any YAML snippets ≤3 lines
+- Speaker notes tell the “why this matters”
+- Deliver .pptx + .pdf
