@@ -1,0 +1,124 @@
+Create a 12–14 slide 16:9 PowerPoint deck titled:
+“OpsAtlas: Flow-as-Code for Operational Excellence”
+
+Audience: Director of Engineering + SRE leads
+Tone: crisp, executive-friendly, technically credible
+Design: modern, minimal; white/charcoal background, accent color #2F80ED; consistent icon set; 2–3 colors max; no clipart
+
+Include SPEAKER NOTES under each slide (3–6 bullets, ~60–90 words).
+Assume Bitbucket + Jira + Dynatrace + Splunk; use placeholders [Director Name], [Your Name], [Date].
+
+=== SLIDE OUTLINE ===
+
+1) Title
+- Title: OpsAtlas: Flow-as-Code for Operational Excellence
+- Subtitle: “Map request flows in CI, auto-publish release notes, and ground SRE & AI agents in a single source of truth.”
+- Footer: Presenter, Role, [Date]
+- Visual: simple line-map motif or network graph icon
+
+2) TL;DR (One-liner)
+- Big line: “Keep request-flow diagrams & checkpoint specs in Git on every PR; auto-generate Jira→Release Notes; alerting next.”
+- 3 bullets: Flow-as-Code cadence • Module-only generation • Checkpoint YAML → Terraform alerts (future)
+
+3) Why (Pain & Urgency)
+- Bullets:
+  • No single, current map of request paths → slow incident triage
+  • Flow drift invisible in PRs → monitoring gaps
+  • Manual, inconsistent release notes → consumers don’t know what to watch
+- Callout: “Now” = growing service count + faster deploys → higher risk without automation
+- Visual: simple “Pain → Cost” diagram
+
+4) Outcome (Success Metrics)
+- Targets (with numbers):
+  • ≥95% PRs that touch code carry “flow-verified” in 4 weeks
+  • 100% releases auto-publish notes with changed modules/checkpoints; draft time <5 min
+  • MTTR −20% for changes touching updated flows within 2 sprints
+- Visual: KPI tiles
+
+5) Concept Overview (Architecture)
+- Boxes/Arrows diagram:
+  Dev Commit → Bitbucket CI (CodeExplorer “Cartographer”) → Flow artifacts (Mermaid+SVG+flow.json) → Checkpoint YAML (“Waypoints”) → Release Notes Generator (Jira+Commits)
+  Future: “Watchtower” Terraform compiles YAML → Dynatrace/Splunk alerts
+- Label components: Cartographer, FlowGate, Waypoints, Watchtower, DriftScan
+
+6) Cadence (PR & CI Flow)
+- Swimlane graphic (Dev / CI / Review):
+  • Pre-commit: module-only flow generation
+  • PR: CI regenerates, compares; adds “flow-verified” or fails on drift
+  • Nightly on main: DriftScan confirms zero drift
+- Side note: deterministic outputs; pinned versions
+
+7) Module-Only Generation (Scope, not whole service)
+- Bullets:
+  • Fast local flow for touched module; external edges shown as stubs
+  • Artifacts per module: flow.mmd, flow.svg, flow.flow.json
+  • Explicit boundaries via module.flow.toml (entries, includes, owners)
+- Visual: small module diagram with external touchpoints
+
+8) Release Notes from Jira → Commits → Changed Areas
+- Bullets:
+  • Parse Sprint board → issues → linked commits/PRs
+  • Summarize impacted modules & checkpoints + consumer watchlist
+  • Output as Bitbucket Release notes page & Markdown artifact
+- Visual: simple funnel (Jira → Commits → Modules → Notes)
+
+9) Checkpoint YAML (“Waypoints”) [Preview]
+- Bullets:
+  • Declarative nodes = checkpoints; intents = metrics/logs/traces/SLOs
+  • Owners & routing embedded (Slack, PagerDuty)
+  • Provider-agnostic selectors (Dynatrace/Splunk hints)
+- Show a tiny, readable YAML snippet (3–6 lines) as illustration
+
+10) Proof (Feasibility & Assumptions)
+- Bullets:
+  • Prior art: working CodeExplorer mode; deterministic Mermaid outputs
+  • Bitbucket Pipelines pattern for regen+diff standard
+  • Assumptions: Jira issue keys in commits; service tags present in Dynatrace/Splunk
+
+11) Plan (Scope → Milestones → Non-Goals)
+- Scope bullets:
+  • Enforce “flow-verified” gate on PRs for changed modules
+  • Auto-draft checkpoint.yaml from flow.json
+  • Generate release notes per sprint/release
+- Milestones (with target dates placeholders):
+  • M1 [Week 1]: Advisory gate on 2 pilot services; nightly drift
+  • M2 [Week 2–3]: Module UX + checkpoint draft + Jira linking POC
+  • M3 [Week 4]: Enforce gate; publish release notes; SRE dashboard
+  • M4 [Week 5–6]: Expand to 5 services; finalize Terraform spec
+- Non-Goals: org-wide dependency graph, auto-remediation, ML baselines (phase-1)
+
+12) Price (Effort, Timeline, Dependencies)
+- Table:
+  Roles | FTE | Duration
+  SRE | 0.5 | 6 weeks (pilot)
+  Platform Eng | 0.5 | 6 weeks
+  2 App Dev Champions | 0.2 each | 6 weeks
+- Dependencies: Bitbucket Pipelines, Jira API, commit linting, Dynatrace/Splunk tags, Terraform workspace (phase-2)
+
+13) Perils (Risks & Mitigations)
+- Risk → Mitigation list:
+  • Dev friction → pre-commit helpers, module-only default, advisory period
+  • Diagram nondeterminism → pinned versions, sort nodes/edges, SVG
+  • Repo bloat → store Mermaid+SVG only; artifact history optional
+  • Jira link gaps → commit message linting; PR template checks
+  • False coverage → nightly drift + SRE review of checkpoint YAML
+
+14) Next Step (Decision & Owner)
+- Ask: “Approve 2-service pilot (checkout, catalog), team allocation, and Jira/CI access by [Date].”
+- Owners: Decision — [Director Name]; Execution — [Your Name]
+- Visual: simple checkbox timeline
+
+Appendix (optional auto-hidden if 12 slides max)
+- Glossary: Cartographer, FlowGate, Waypoints, Watchtower, DriftScan
+- Example flow diff (before/after)
+- Example release notes section
+
+=== GLOBAL SETTINGS ===
+- Typography: Title 36–44pt; body 18–22pt; ample whitespace
+- Add small footer with project name “OpsAtlas”
+- Use consistent icons for: code, CI, diagram, YAML, alert bell, Jira, Bitbucket
+- No dense code blocks; any YAML/CLI snippets must fit 2–3 lines with legible font
+- Each slide: no more than 5 bullets; avoid paragraphs in the slide body
+- Include speaker notes with crisp narrative and explicit “why it matters”
+
+Deliverables: .pptx (editable) + .pdf
