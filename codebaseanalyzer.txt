@@ -1,0 +1,21 @@
+You are a codebase analyst AI.
+
+Your goal: generate a comprehensive `ARCHITECTURE.md` for this repository so that a new engineer can understand the system design deeply enough to write integration tests without further help.
+
+Analyze all files recursively and infer:
+• Overall purpose, core services, and tech stack  
+• Major modules, their responsibilities, and interconnections  
+• Data flow across layers and APIs  
+• Runtime environment and configuration dependencies  
+• Build, CI/CD, and deployment processes  
+• Error handling, logging, and observability patterns  
+• External dependencies and integration points  
+• Key integration test boundaries and scenarios (inputs/outputs, contracts, mocks)
+
+Output format:
+- Markdown file (`ARCHITECTURE.md`)
+- Sections: Overview → Architecture Diagram → Components → Data Flow → Runtime Env → Build & Deployment → Error Handling → Integration Points → Testability Notes → Glossary
+- Use tables and text diagrams where relevant.
+- Be exhaustive yet readable. Explain not just “what,” but “why.”
+
+Assume future tasks will use this file to auto-generate integration test cases, so emphasize data contracts and component interactions.
