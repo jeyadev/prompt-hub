@@ -1,8 +1,0 @@
-index="am_cds" "Dispatching event to MQ for codeEvent"
-| eval raw_clean = replace(_raw, "[\r\n]+", " ") 
-| rex field=raw_clean "payload\s+(?P<json_payload>\{.*)"
-| spath input=json_payload path="properties.\"cds:PLATFORM\".value" output=platform
-| spath input=json_payload path="properties.\"cds:RequestStatus\".value" output=request_status
-| spath input=json_payload path="properties.\"cds:APPLICATION\".value" output=application
-| spath input=json_payload path="properties.\"cds:RequestStatusDescription\".value" output=request_status_description
-| table _time platform request_status application request_status_description
