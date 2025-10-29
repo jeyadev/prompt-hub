@@ -1,0 +1,68 @@
+Business Results
+
+Accomplishments
+
+Advanced AI-driven reliability engineering: Initiated and led the integration of the CDS application into AIOps360, enabling advanced detection of corner-case anomalies. This directly improved system resilience and anomaly triage accuracy across the platform.
+
+Strengthened observability governance: Instituted daily health checks for APAC and EMEA, streamlined SLOs through AppStatus2.0, and developed tiered dashboards in Splunk and Dynatrace—enhancing visibility from leadership to engineering teams and ensuring transparent stakeholder communication.
+
+Delivered measurable system performance gains: Resolved the long-standing CM connection instability through the GKP startup probe, bringing consumer-side issues to zero. Achieved substantial service uplift—Upload response time improved by 49%, Download by 60%, and error rate reduced by 90% through targeted SRE interventions.
+
+Empowered app teams through automation: Built performance and executive dashboards that enabled engineering teams to self-triage incidents faster, reducing dependency on core SRE support and shortening mean time to resolution (MTTR).
+
+Accelerated engineering velocity via AI adoption: Championed early adoption of DevGPT Cline, GitHub Copilot, and MCP servers for engineers and Jira integration—automating report generation, code diagnostics, and cross-functional triage. This helped cut manual effort and fostered a culture of AI-augmented development.
+
+Opportunities for Development
+
+Expand predictive and auto-remediation capabilities: Build on AIOps360 adoption by integrating machine learning–driven root cause prediction and automated resolution workflows to further reduce incident resolution time.
+
+Broaden cross-domain influence: Strengthen collaboration with adjacent product and infrastructure teams to extend AI observability practices and reliability frameworks across more services, enhancing enterprise-wide adoption.
+
+
+
+Client / Customer / Stakeholder
+
+Accomplishments
+
+Strengthened stakeholder confidence through transparent communication: Implemented a structured governance framework with daily APAC & EMEA health checks and streamlined reporting via executive dashboards, ensuring proactive visibility into system health for senior leadership and partner teams.
+
+Delivered measurable reliability improvements for client-facing systems: Led SRE interventions that improved Upload and Download Service latency by 49% and 60%, and reduced error rates by 90%, directly improving user experience for downstream consumers.
+
+Enhanced cross-functional collaboration: Partnered with app teams to co-develop Performance Dashboards, empowering them to self-triage incidents, thereby reducing dependency on central SREs and increasing responsiveness to customer-impacting issues.
+
+Improved consumer experience stability: Proposed and implemented the GKP startup probe, eliminating CM connection instability and bringing consumer-reported incidents to zero—demonstrating a direct improvement in end-user reliability.
+
+Promoted data-driven decision-making: Leveraged AI-based tools (AIOps360, Dynatrace MCP servers, DevGPT Cline) to enable faster detection of anomalies and actionable insights, ensuring that client-impacting issues were mitigated before escalation.
+
+Opportunities for Development
+
+Advance proactive stakeholder analytics: Build deeper feedback loops with business and client teams by integrating user impact analytics into observability dashboards to quantify the business value of SRE interventions.
+
+Expand influence across product domains: Scale existing reliability practices beyond CDS by partnering with more product groups to embed observability-by-design in their delivery lifecycle.
+
+
+
+
+Teamwork and Leadership
+
+Accomplishments
+
+Fostered cross-functional collaboration: Partnered with application, platform, and observability teams to co-design unified dashboards in Splunk and Dynatrace, aligning on SLO definitions and accelerating triage velocity across regions.
+
+Enabled team growth through AI adoption: Mentored peers in leveraging tools like DevGPT Cline, GitHub Copilot, and AIOps360, helping engineers adopt AI-based workflows for debugging and performance analysis—building confidence and efficiency across the engineering group.
+
+Championed inclusive problem-solving forums: Drove collaborative discussions across APAC and EMEA standups, ensuring distributed ownership of service reliability goals while encouraging visibility into successes and learning moments.
+
+Strengthened culture of proactive learning: Regularly shared insights, post-mortems, and dashboard techniques through internal brown-bag sessions, promoting a culture of data-informed decisions and continuous improvement.
+
+Built bridges between engineering and operations: Acted as a connector between development squads and the SRE organization to ensure operational readiness and shared accountability for uptime, fostering mutual respect and collaboration.
+
+Opportunities for Development
+
+Expand mentoring at scale: Formalize a structured knowledge-sharing program (e.g., “AI-in-SRE Playbook” sessions) to help more engineers upskill in automation and observability practices.
+
+Deepen leadership influence: Continue developing cross-domain facilitation skills to guide diverse teams through complex reliability programs and align strategic priorities across global stakeholders.
+
+
+
+
