@@ -6,6 +6,10 @@ Given your stack, we can stop hand-waving and design this like a real internal p
 * **Confluence + Engineers Portal** as the brain (runbooks)
 * **IDAnywhere + FIDs** as the security skeleton
 
+* https://www.freecodecamp.org/news/what-is-toon-how-token-oriented-object-notation-could-change-how-ai-sees-data/
+* https://www.c-sharpcorner.com/article/toon-for-llms-a-cleaner-and-more-efficient-json-alternative/
+* https://github.com/toon-format/toon
+
 I’ll walk through:
 
 1. How I’d architect this *for your org specifically*
