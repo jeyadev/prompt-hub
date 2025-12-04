@@ -1,16 +1,14 @@
-Got it – we’ll ignore *all* update flows and treat **only upload/createDocument** calls where a `GUDI=` is present as the anti-pattern.
+Cool, then we treat **any** `GUDI=` in `StorageRequestAdapter` as misuse, no special casing.
 
-Let’s lock in a clean, upload-only report set.
+Here’s a cleaned-up, final set of **upload-only, adapter-only** queries you can actually paste into Splunk for your report.
 
 ---
 
-## 1) Overall: uploads with vs without GUDI
-
-**Story:** “Out of all upload (createDocument) requests, X% were sent *with* a client GUDI, which is against design.”
+## 1) Overall volume – uploads with vs without GUDI
 
 ```spl
 index=am_cds environment=prod source="http:AWM_PROD"
-"CdsRequestInterceptor" "uri=/store/api/v3/createDocument"
+"store.model.StorageRequestAdapter - Converting StorageRequestAdapter"
 | eval has_gudi = if(match(log, "GUDI="), "upload_with_gudi", "upload_without_gudi")
 | stats count by has_gudi
 | eventstats sum(count) as total_uploads
@@ -18,94 +16,87 @@ index=am_cds environment=prod source="http:AWM_PROD"
 | sort -count
 ```
 
+**Use:** one table in your deck –
+“X of Y uploads (Z%) arrive with a client-supplied GUDI, which violates design (GUDI is server-generated).”
+
 ---
 
-## 2) Time trend: how client-GUDI uploads evolve
-
-**Story:** “This is continuous behaviour, not a one-off; here’s the trend.”
+## 2) Time trend – is this stable or growing?
 
 ```spl
 index=am_cds environment=prod source="http:AWM_PROD"
-"CdsRequestInterceptor" "uri=/store/api/v3/createDocument"
+"store.model.StorageRequestAdapter - Converting StorageRequestAdapter"
 | eval has_gudi = if(match(log, "GUDI="), "upload_with_gudi", "upload_without_gudi")
 | timechart span=1h count by has_gudi
 ```
 
-* Use `span=1d` for a longer timeframe.
+Change `span=1d` for a 30-day view.
 
 ---
 
-## 3) Which clients are doing it (APPNAME view)
+## 3) Who’s doing it – group by some client identifier in attributes
 
-**Story:** “Misuse is concentrated in these apps; here is the % of *their* uploads that send a GUDI.”
+Pick the attribute that best represents “client” in your `attributes={...}` block.
+Example below uses `ACCOUNT_NUMBER`; swap to `SOURCE_SYSTEM`, `CHANNEL`, etc. if that’s better.
 
 ```spl
 index=am_cds environment=prod source="http:AWM_PROD"
-"CdsRequestInterceptor" "uri=/store/api/v3/createDocument"
-| rex field=log "APPNAME=\[(?:APPNAME=)?(?<appname>[^,\]]+)"
+"store.model.StorageRequestAdapter - Converting StorageRequestAdapter"
+| rex field=log "ACCOUNT_NUMBER=(?<account_number>[^,}]+)"
 | eval upload_with_gudi = if(match(log, "GUDI="), 1, 0)
-| stats count as total_uploads sum(upload_with_gudi) as gudi_uploads by appname
+| stats count as total_uploads sum(upload_with_gudi) as gudi_uploads by account_number
 | eval pct_gudi_uploads = round(100 * gudi_uploads / total_uploads, 2)
 | where gudi_uploads > 0
 | sort -gudi_uploads
 ```
 
-Use this table directly in the deck/email to app owners.
+**Use:**
+Per-client misuse table: “For these accounts/systems, N% of uploads send GUDI.”
 
 ---
 
-## 4) HTTP status distribution for *upload-with-GUDI* calls
-
-**Story:** “Most of these anti-pattern uploads are actually succeeding (or failing) with status X, so they’re ‘working’ today and baking in a bad contract.”
+## 4) Infra distribution – which clusters/hosts see GUDI-uploads
 
 ```spl
 index=am_cds environment=prod source="http:AWM_PROD"
-"CdsRequestInterceptor" "uri=/store/api/v3/createDocument" "GUDI="
-| rex field=log "httpStatus=(?<httpStatus>\d+)"
-| stats count by httpStatus
-| eventstats sum(count) as total
-| eval pct = round(100 * count / total, 2)
+"store.model.StorageRequestAdapter - Converting StorageRequestAdapter" "GUDI="
+| stats count by cluster hostname
 | sort -count
 ```
 
+Shows where the pattern is most visible.
+
 ---
 
-## 5) Concrete examples of “upload with GUDI” from storage layer
+## 5) Sample events – clean vs dirty uploads
 
-For screenshots like the ones you shared (“Upload with GUDI” lines):
-
-```spl
-index=am_cds environment=prod source="http:AWM_PROD"
-"store.model.StorageRequestAdapter - Converting StorageRequestAdapter"
-"GUDI="
-| table _time hostname cluster log
-| head 50
-```
-
-And for the “clean” baseline (upload without GUDI):
+**Expected (no GUDI):**
 
 ```spl
 index=am_cds environment=prod source="http:AWM_PROD"
 "store.model.StorageRequestAdapter - Converting StorageRequestAdapter"
 NOT "GUDI="
 | table _time hostname cluster log
+| head 5
+```
+
+**Anti-pattern (with GUDI):**
+
+```spl
+index=am_cds environment=prod source="http:AWM_PROD"
+"store.model.StorageRequestAdapter - Converting StorageRequestAdapter" "GUDI="
+| table _time hostname cluster log
 | head 10
 ```
 
-These give you side-by-side samples to paste into the wider-forum doc:
-
-* **Expected:** upload adapter log without `GUDI=`.
-* **Observed anti-pattern:** upload adapter log with `GUDI=` plus the interceptor log above showing the same.
+Drop 1–2 redacted lines of each into your mail / Confluence page so people can “see” the issue immediately.
 
 ---
 
-### How this reads in the forum
+### TL;DR for the forum
 
-With just these 5 queries you can say:
+* Metric: `% of StorageRequestAdapter uploads that contain `GUDI=` in attributes`.
+* Dimensions: time, client identifier (ACCOUNT_NUMBER / SOURCE_SYSTEM), cluster/host.
+* Evidence: side-by-side log samples from the adapter.
 
-* “In the last *N* days, **X% of uploads** to `/store/api/v3/createDocument` were sent with a **client-supplied GUDI**, even though GUDI must be generated server-side.”
-* “This behaviour is driven mainly by these apps: A, B, C (table from Query 3).”
-* “Here are example log lines from the upload path showing the client-supplied `GUDI` wired into our storage adapter (Queries 5).”
-* “Today these calls mostly return status … (Query 4), so clients think this is a supported behaviour – we should communicate and then enforce server-only GUDI generation.”
-
-That’s a tight, upload-only, design-aligned story.
+That’s a tight, StorageRequestAdapter-only story with no `createDocument` or test-data distractions.
