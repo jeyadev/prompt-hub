@@ -58,20 +58,12 @@ Any decisions or standardization efforts will be documented separately.
 - Last Updated: <Date>
 
 
-I’ve been reviewing the HTTP status code behaviour across the <flow> modules, starting with the controller and service classes we exported into an inventory. After running a structured audit on both FIND and STORE, a few recurring patterns surfaced that may be worth discussing.
+I’ve been reviewing HTTP status code behavior across the <flow> modules using an inventory-driven scan of the controller and service classes. After running the audit on both FIND and STORE, a few recurring patterns surfaced that may be worth discussing.
 
-At a high level, I’m seeing inconsistencies such as:
+At a high level, I’m seeing cases such as empty-result scenarios returning 404, error payloads returned with 200 OK, broadly mapped or swallowed exceptions, and some stack trace exposure via inherited handlers. These patterns appear across multiple endpoints and both modules.
 
-empty-result scenarios returning 404,
+I’ve documented the findings in Confluence (parent summary + module-level reports) and wanted to check in with you both first to understand if there’s any historical rationale or design constraints behind these choices.
 
-error payloads returned with 200 OK,
-
-exceptions swallowed or mapped broadly,
-
-and some stack trace exposure through inherited handlers.
-
-These aren’t necessarily errors, but they do show up across multiple endpoints in both modules, which made me wonder if there was any historical rationale or design choice behind them.
-
-Before taking this forward or opening a larger discussion, I wanted to check with both of you first to understand any context or constraints that may have shaped these patterns. Once I have your input, I can frame the findings more accurately and propose next steps.
+Based on that context, we can decide whether this is simply behavior to document, or something we may want to gradually normalize via a refactoring effort, potentially as part of a 2026 roadmap.
 
 Happy to walk through the summary whenever convenient.
