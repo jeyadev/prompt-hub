@@ -58,12 +58,14 @@ Any decisions or standardization efforts will be documented separately.
 - Last Updated: <Date>
 
 
-I’ve been reviewing HTTP status code behavior across the <flow> modules using an inventory-driven scan of the controller and service classes. After running the audit on both FIND and STORE, a few recurring patterns surfaced that may be worth discussing.
+I’ve been reviewing HTTP status code behavior across the <flow> modules using an inventory-driven audit of the controller and service classes. After running this across FIND and STORE, a few recurring patterns surfaced that may be worth discussing.
 
-At a high level, I’m seeing cases such as empty-result scenarios returning 404, error payloads returned with 200 OK, broadly mapped or swallowed exceptions, and some stack trace exposure via inherited handlers. These patterns appear across multiple endpoints and both modules.
+At a high level, these include empty-result scenarios returning 404, error payloads returned with 200 OK, broadly mapped or swallowed exceptions, and some stack trace exposure via inherited handlers. These patterns appear consistently across multiple endpoints and both modules.
 
-I’ve documented the findings in Confluence (parent summary + module-level reports) and wanted to check in with you both first to understand if there’s any historical rationale or design constraints behind these choices.
+I’ve captured the findings in Confluence (parent summary with module-level reports) and wanted to check in with you both first to understand if there’s any historical rationale or design constraints behind these choices.
 
-Based on that context, we can decide whether this is simply behavior to document, or something we may want to gradually normalize via a refactoring effort, potentially as part of a 2026 roadmap.
+Longer term, as we think about our 2026 north star around toil reduction and AI-assisted operations, having clearer and more consistent response semantics becomes increasingly important. It directly affects signal quality, automation reliability, and how effectively we can apply AI to detect, classify, and remediate issues without human intervention.
+
+Once we validate the intent behind the current behavior, we can decide whether this remains documented as-is or is something we gradually normalize via a refactoring effort aligned with that direction.
 
 Happy to walk through the summary whenever convenient.
