@@ -1,0 +1,18 @@
+index="am_cds" "Distribute Quartz Scheduler"
+earliest=-35m@m latest=now
+| rex "beanName\s+(?<beanName>\w+)"
+| dedup beanName
+| stats values(beanName) as ran
+| eval run_hour=strftime(now(), "%H")
+| eval expected=case(
+    run_hour=="06", split("GTA1", ","),
+    run_hour=="12", split("FEES,COACS,GTA2,TAXRS,PMC,ENGAGE,IPBMANDATE,EMIR,OTC,CCTSWISS,STGIPBSTMT,FMIA,SUITABLIBP", ","),
+    1==1, split("", ",")
+  )
+| where mvcount(expected)>0
+| mvexpand expected
+| eval present=if(mvfind(ran, expected) >= 0, 1, 0)
+| where present=0
+| stats values(expected) as missing count as missing_count values(ran) as ran_list
+| eval alert_message="Missing bean(s): ".mvjoin(missing,", ")." | Ran: ".mvjoin(ran_list,", ")
+| table missing_count missing ran_list alert_message
