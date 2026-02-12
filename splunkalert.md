@@ -149,3 +149,35 @@ Leave the SPL’s `earliest=-35m@m latest=now` as-is **OR** set the alert time r
 ---
 
 If you configure it like this, Splunk will only alert when it actually has something useful to say (rare trait in software), and the message will literally name the missing bean(s).
+
+```
+| makeresults
+| eval batch="06,12"
+| makemv delim="," batch
+| mvexpand batch
+| eval expected=case(
+    batch=="06", split("GTA1", ","),
+    batch=="12", split("FEES,COACS,GTA2,TAXRS,PMC,ENGAGE,IPBMANDATE,EMIR,OTC,CCTSWISS,STGIPBSTMT,FMIA,SUITABLIBP", ",")
+  )
+| join type=left batch [
+    search index="am_cds" "Distribute Quartz Scheduler" earliest=-1d@d latest=@d
+    | rex "beanName\s+(?<beanName>\w+)"
+    | eval hhmm=strftime(_time, "%H:%M")
+    | eval batch=case(
+        hhmm>="05:55" AND hhmm<="06:30", "06",
+        hhmm>="11:55" AND hhmm<="12:30", "12",
+        1==1, null()
+      )
+    | where isnotnull(batch)
+    | stats values(beanName) as ran by batch
+]
+| eval ran=coalesce(ran, mvappend())
+| mvexpand expected
+| eval present=if(mvfind(ran, expected) >= 0, 1, 0)
+| where present=0
+| stats values(expected) as missing count as missing_count values(ran) as ran_list by batch
+| eval day=strftime(relative_time(now(),"-1d@d"), "%Y-%m-%d")
+| eval alert_message="Day=".day." Batch=".batch." Missing=".mvjoin(missing,", ")." | Ran=".if(mvcount(ran_list)=0,"<none>",mvjoin(ran_list,", "))
+| table day batch missing_count missing ran_list alert_message
+| sort batch
+```
