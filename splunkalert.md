@@ -171,13 +171,13 @@ If you configure it like this, Splunk will only alert when it actually has somet
     | where isnotnull(batch)
     | stats values(beanName) as ran by batch
 ]
-| eval ran=coalesce(ran, mvappend())
+| eval ran=coalesce(ran, "")
 | mvexpand expected
 | eval present=if(mvfind(ran, expected) >= 0, 1, 0)
 | where present=0
 | stats values(expected) as missing count as missing_count values(ran) as ran_list by batch
 | eval day=strftime(relative_time(now(),"-1d@d"), "%Y-%m-%d")
-| eval alert_message="Day=".day." Batch=".batch." Missing=".mvjoin(missing,", ")." | Ran=".if(mvcount(ran_list)=0,"<none>",mvjoin(ran_list,", "))
+| eval alert_message="Day=".day." Batch=".batch." Missing=".mvjoin(missing,", ")." | Ran=".if(mvcount(ran_list)=0 OR ran_list=="","<none>",mvjoin(ran_list,", "))
 | table day batch missing_count missing ran_list alert_message
 | sort batch
 ```
