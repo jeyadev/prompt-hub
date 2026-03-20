@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SRE Agent Engine — Finalized Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07080c;
+    --surface: #0e1018;
+    --surface-2: #151822;
+    --surface-3: #1c2030;
+    --border: #252a3a;
+    --border-hover: #3a4060;
+    --text: #d8dce8;
+    --text-dim: #6b7394;
+    --text-bright: #f0f2fa;
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,0.08);
+    --green-mid: rgba(52,211,153,0.15);
+    --orange: #fb923c;
+    --orange-dim: rgba(251,146,60,0.08);
+    --orange-mid: rgba(251,146,60,0.15);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.08);
+    --red-mid: rgba(248,113,113,0.15);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96,165,250,0.08);
+    --blue-mid: rgba(96,165,250,0.15);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.08);
+    --purple-mid: rgba(167,139,250,0.15);
+    --cyan: #22d3ee;
+    --cyan-dim: rgba(34,211,238,0.08);
+    --yellow: #fbbf24;
+    --yellow-dim: rgba(251,191,36,0.08);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Instrument Sans', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.6; }
+
+  .shell {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 48px 28px 80px;
+  }
+
+  /* ─── Header ─── */
+  .masthead {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 36px;
+    margin-bottom: 40px;
+  }
+  .masthead .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 14px;
+  }
+  .masthead h1 {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    color: var(--text-bright);
+    margin-bottom: 10px;
+  }
+  .masthead h1 em { font-style: normal; color: var(--green); }
+  .masthead .lead {
+    font-size: 15px;
+    color: var(--text-dim);
+    max-width: 780px;
+    line-height: 1.7;
+  }
+  .masthead .lead strong { color: var(--text); font-weight: 600; }
+
+  /* ─── Tabs ─── */
+  .nav-bar {
+    display: flex;
+    gap: 2px;
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 36px;
+    overflow-x: auto;
+    width: fit-content;
+    max-width: 100%;
+  }
+  .nav-btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-dim);
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+  .nav-btn:hover { color: var(--text); background: var(--surface-2); }
+  .nav-btn.on {
+    color: var(--green);
+    background: var(--green-dim);
+    border-color: rgba(52,211,153,0.25);
+  }
+
+  /* ─── Panels ─── */
+  .panel { display: none; }
+  .panel.visible { display: block; animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── Shared Card ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--border-hover); }
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 5px;
+    letter-spacing: 0.5px;
+  }
+  .badge-green  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(52,211,153,0.2); }
+  .badge-blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(96,165,250,0.2); }
+  .badge-purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+  .badge-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(251,146,60,0.2); }
+  .badge-red    { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(248,113,113,0.2); }
+  .badge-cyan   { background: var(--cyan-dim);   color: var(--cyan);   border: 1px solid rgba(34,211,238,0.2); }
+  .badge-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+
+  .card h3 { font-size: 17px; font-weight: 600; color: var(--text-bright); }
+  .card p, .card li { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+  .card strong { color: var(--text); font-weight: 600; }
+
+  .rationale {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: var(--surface-2);
+    border-left: 3px solid var(--green);
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+  .rationale::before {
+    content: '⚡ RATIONALE';
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--green);
+    margin-bottom: 6px;
+  }
+
+  .alt-rationale {
+    border-left-color: var(--orange);
+  }
+  .alt-rationale::before {
+    content: '⚠ ALTERNATIVES REJECTED';
+    color: var(--orange);
+  }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label .line { flex: 1; height: 1px; background: var(--border); }
+
+  /* ─── Architecture Diagram ─── */
+  .arch-layer {
+    position: relative;
+    padding-left: 28px;
+    margin-bottom: 6px;
+  }
+  .arch-layer::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: -6px;
+    width: 2px;
+    background: var(--border);
+  }
+  .arch-layer:last-child::before { display: none; }
+  .arch-layer .layer-dot {
+    position: absolute;
+    left: 2px;
+    top: 26px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--green);
+    background: var(--bg);
+    z-index: 1;
+  }
+
+  .mini-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .mini-card h4 {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+  .mini-card p {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ─── Code Blocks ─── */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .code-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .code-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .code-body {
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.9;
+    overflow-x: auto;
+    white-space: pre;
+    color: var(--text-dim);
+  }
+  .ck { color: var(--blue); }
+  .cv { color: var(--green); }
+  .cc { color: #4a5070; font-style: italic; }
+  .cs { color: var(--orange); }
+  .cb { color: var(--purple); }
+  .cr { color: var(--red); }
+
+  /* ─── Flow Diagram ─── */
+  .flow-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 860px;
+  }
+  .flow-node {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+    min-height: 80px;
+  }
+  .flow-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 40px;
+    flex-shrink: 0;
+  }
+  .flow-pip {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--green);
+    background: var(--bg);
+    flex-shrink: 0;
+    margin-top: 20px;
+    z-index: 1;
+  }
+  .flow-pip.strategist { border-color: var(--purple); background: var(--purple); }
+  .flow-pip.tool { border-color: var(--blue); }
+  .flow-pip.gate { border-color: var(--orange); background: var(--orange); }
+  .flow-pip.write { border-color: var(--red); background: var(--red); }
+  .flow-pip.sub { border-color: var(--cyan); }
+  .flow-wire {
+    flex: 1;
+    width: 2px;
+    background: var(--border);
+  }
+  .flow-body {
+    flex: 1;
+    padding: 12px 0;
+  }
+  .flow-body .card { margin-bottom: 0; }
+
+  .spawn-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .spawn-card {
+    background: var(--surface-3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .spawn-card h5 {
+    font-family: var(--mono);
+    font-size: 12px;
+    margin-bottom: 4px;
+    color: var(--cyan);
+  }
+  .spawn-card p {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .decision-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface-3);
+  }
+  .pill-green { border-color: var(--green); color: var(--green); }
+  .pill-red { border-color: var(--red); color: var(--red); }
+  .pill-orange { border-color: var(--orange); color: var(--orange); }
+  .pill-purple { border-color: var(--purple); color: var(--purple); }
+
+  .callout {
+    padding: 16px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-top: 20px;
+  }
+  .callout-green {
+    background: var(--green-dim);
+    border: 1px solid rgba(52,211,153,0.2);
+    color: var(--green);
+  }
+  .callout-red {
+    background: var(--red-dim);
+    border: 1px solid rgba(248,113,113,0.2);
+    color: var(--red);
+  }
+  .callout strong { color: inherit; }
+
+  /* ─── Decision Log ─── */
+  .decision-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 1fr;
+    gap: 16px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+  .decision-row:last-child { border-bottom: none; }
+  .dec-q {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+  .dec-a {
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .dec-chosen {
+    color: var(--green);
+  }
+  .dec-rejected {
+    color: var(--text-dim);
+    text-decoration: line-through;
+    text-decoration-color: rgba(107,115,148,0.3);
+  }
+
+  @media (max-width: 800px) {
+    .decision-row { grid-template-columns: 1fr; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .nav-bar { width: 100%; }
+    .spawn-group { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header class="masthead">
+    <div class="eyebrow">Finalized Architecture · v2.0</div>
+    <h1>SRE <em>Toil Automation</em> Agent Engine</h1>
+    <div class="lead">
+      A <strong>Strategist → Dynamic Runbook → Sub-Agent</strong> architecture.
+      The Strategist Agent ingests signals from all MCP tool surfaces, uses domain reasoning to
+      generate a situation-specific runbook, compiles it to YAML, and spawns specialized sub-agents
+      to execute each task — with human approval gates before any remediation.
+      <br><br>
+      Research-backed by: <strong>AWS Bedrock supervisor-agent pattern</strong>, <strong>Microsoft's LLM incident management research</strong>,
+      <strong>mcp-agent orchestration framework</strong>, and the <strong>Rootly/incident.io dynamic runbook model</strong>.
+    </div>
+  </header>
+
+  <!-- ═══════════════ NAV ═══════════════ -->
+  <nav class="nav-bar" id="nav">
+    <button class="nav-btn on" data-tab="overview">System Overview</button>
+    <button class="nav-btn" data-tab="flow">Execution Flow</button>
+    <button class="nav-btn" data-tab="schema">Generated Runbook Schema</button>
+    <button class="nav-btn" data-tab="decisions">Decision Log</button>
+    <button class="nav-btn" data-tab="structure">Project Structure</button>
+  </nav>
+
+  <!-- ═══════════════ PANEL: OVERVIEW ═══════════════ -->
+  <section class="panel visible" id="p-overview">
+
+    <div class="section-label"><span style="color:var(--green)">01</span> Core Architecture — 4 Layers <span class="line"></span></div>
+
+    <!-- Layer 1: UI -->
+    <div class="arch-layer">
+      <div class="layer-dot" style="border-color: var(--blue)"></div>
+      <div class="card">
+        <div class="card-head">
+          <span class="badge badge-blue">L1 · UI</span>
+          <h3>Operations Dashboard</h3>
+          <span class="badge badge-cyan" style="margin-left: auto">React + Vite</span>
+        </div>
+        <div class="grid-3">
+          <div class="mini-card">
+            <h4>Incident Feed</h4>
+            <p>Live stream of triggered runs, their state (diagnosing → planning → executing → verifying), and drill-down into each step's output.</p>
+          </div>
+          <div class="mini-card">
+            <h4>Generated Runbook Viewer</h4>
+            <p>Shows the YAML runbook the Strategist generated for this incident. Editable before execution. Diffable against previous runs.</p>
+          </div>
+          <div class="mini-card">
+            <h4>Approval Queue</h4>
+            <p>Critical path. Shows proposed remediation with full diagnosis context. Approve/reject/modify. Audit trail per action.</p>
+          </div>
+          <div class="mini-card">
+            <h4>MCP Registry</h4>
+            <p>Register MCP servers, health-check connections, browse discovered tools. Each tool tagged as read or write.</p>
+          </div>
+        </div>
+        <div class="rationale">
+          <strong>Why React + Vite over Next.js or HTMX?</strong> This is an internal SRE tool, not a public-facing app — SEO and SSR are irrelevant. Vite gives sub-second HMR for rapid iteration. React is the safest bet for hiring and component ecosystem (Monaco editor for YAML, xterm.js for log streaming). HTMX was considered but rejected because the approval queue needs real-time WebSocket state that HTMX handles poorly.
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 2: API -->
+    <div class="arch-layer">
+      <div class="layer-dot" style="border-color: var(--purple)"></div>
+      <div class="card">
+        <div class="card-head">
+          <span class="badge badge-purple">L2 · API</span>
+          <h3>FastAPI Backend</h3>
+          <span class="badge badge-cyan" style="margin-left: auto">Python 3.12 · async</span>
+        </div>
+        <div class="grid-3">
+          <div class="mini-card">
+            <h4>POST /incidents</h4>
+            <p>Receive alert webhooks or manual triggers. Validates context (app, env, severity), creates run record, pushes to engine.</p>
+          </div>
+          <div class="mini-card">
+            <h4>WS /runs/{id}/stream</h4>
+            <p>WebSocket stream of execution events. Each step emits: started → tool_called → output_received → decision_made.</p>
+          </div>
+          <div class="mini-card">
+            <h4>POST /approvals/{id}</h4>
+            <p>Approve or reject a gated remediation step. Logs who approved, when, and the full context they saw. Resumes engine.</p>
+          </div>
+          <div class="mini-card">
+            <h4>GET /runbooks/{id}</h4>
+            <p>Fetch the generated YAML runbook for any run. Supports version history — every edit before execution is tracked.</p>
+          </div>
+          <div class="mini-card">
+            <h4>CRUD /mcp-servers</h4>
+            <p>Register, update, delete MCP server configs. On register, auto-discovers tools and caches their schemas.</p>
+          </div>
+          <div class="mini-card">
+            <h4>GET /runs</h4>
+            <p>Paginated run history. Filter by app, env, status, time range. Full audit trail for compliance.</p>
+          </div>
+        </div>
+        <div class="rationale">
+          <strong>Why FastAPI over Flask/Django?</strong> The engine runs concurrent MCP calls and streams results via WebSocket — both require first-class async. FastAPI is natively async (Starlette + uvicorn), has Pydantic-based validation (which we already need for runbook schemas), and auto-generates OpenAPI docs. Django's ORM is sync-first and adds unnecessary weight. Flask + SocketIO is possible but requires more glue code for the same result.
+        </div>
+        <div class="rationale alt-rationale">
+          <strong>LangGraph / LangChain:</strong> Adds framework coupling, graph DSL complexity, and a large dependency tree for something we can express in ~300 lines of pure Python async. The engine's control flow is a simple state machine, not a graph. <strong>Temporal:</strong> Excellent for durable execution at scale (used by Stripe, Netflix), but adds an infrastructure dependency (Temporal server + worker cluster). For MVP, Python asyncio with SQLite-backed state checkpointing gives us durability without ops overhead. Temporal is the clear v2 choice when you need multi-node execution.
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 3: Engine -->
+    <div class="arch-layer">
+      <div class="layer-dot" style="border-color: var(--green)"></div>
+      <div class="card" style="border-color: rgba(52,211,153,0.2);">
+        <div class="card-head">
+          <span class="badge badge-green">L3 · ENGINE</span>
+          <h3>Agent Engine — The Brain</h3>
+          <span class="badge badge-cyan" style="margin-left: auto">Claude API + MCP SDK</span>
+        </div>
+        <p style="margin-bottom: 16px;">This is the core differentiator. Three-phase architecture: <strong>Diagnose → Plan → Execute</strong>.</p>
+        <div class="grid-2">
+          <div class="mini-card" style="border-color: rgba(167,139,250,0.2);">
+            <h4 style="color: var(--purple);">Strategist Agent</h4>
+            <p><strong>Phase 1 — Diagnose:</strong> Receives incident context. Calls read-only MCP tools across ALL registered servers (Splunk, Dynatrace, SLO tracker, etc.) to gather comprehensive situation data. Runs in parallel where possible.</p>
+            <p style="margin-top: 8px;"><strong>Phase 2 — Plan:</strong> Feeds all tool outputs into Claude with domain-specific system prompt. Claude generates a structured runbook: ordered steps, tool calls, decision gates, and remediation actions. Output is validated against Pydantic schema and serialized to YAML.</p>
+          </div>
+          <div class="mini-card" style="border-color: rgba(34,211,238,0.2);">
+            <h4 style="color: var(--cyan);">Sub-Agent Spawner</h4>
+            <p><strong>Phase 3 — Execute:</strong> Parses the generated YAML runbook. For each step, spawns a lightweight sub-agent — a bounded async task with its own MCP client, tool scope, and timeout. Sub-agents run sequentially by default, parallel when the runbook specifies <code>parallel: true</code>.</p>
+            <p style="margin-top: 8px;">Each sub-agent type: <strong>DiagnosticAgent</strong> (read-only MCP calls), <strong>DecisionAgent</strong> (LLM reasoning at branch points), <strong>RemediationAgent</strong> (write MCP calls — always gated).</p>
+          </div>
+          <div class="mini-card" style="border-color: rgba(52,211,153,0.2);">
+            <h4 style="color: var(--green);">Context Accumulator</h4>
+            <p>Maintains a rolling context window across all sub-agent outputs. Summarizes long tool outputs (Splunk queries can return 50KB+) to stay within token budget. Uses a <strong>3-tier strategy</strong>: raw output (if &lt;2K tokens), extractive summary (2K–8K), abstractive summary (8K+).</p>
+          </div>
+          <div class="mini-card" style="border-color: rgba(251,146,60,0.2);">
+            <h4 style="color: var(--orange);">Approval Gate</h4>
+            <p>Intercepts any step where <code>type: remediation</code> or <code>approval_required: true</code>. Pauses execution, pushes full diagnosis context + proposed action to the approval queue. Resumes only on human approval. Timeout configurable (default: 30 min → auto-escalate).</p>
+          </div>
+        </div>
+        <div class="rationale">
+          <strong>Why Strategist generates the runbook dynamically instead of following pre-written YAML?</strong> Three reasons:
+          (1) <strong>Failure modes are combinatorial</strong> — a pre-written runbook for "high error rate" can't anticipate that today's cause is an OOM from a memory leak in a new deployment vs. an upstream DNS timeout vs. a certificate expiry. The LLM adapts the plan to what it actually sees in the data.
+          (2) <strong>Tool surfaces evolve</strong> — when you add a new MCP server (say, PagerDuty), the Strategist automatically incorporates it into its plans without rewriting every playbook.
+          (3) <strong>Institutional knowledge capture</strong> — the Strategist's system prompt encodes your team's SRE domain expertise (escalation rules, SLO thresholds, known architectural weaknesses), which is easier to maintain as a prompt than as branching YAML. The generated YAML is still the execution artifact — auditable, diffable, reproducible — but it's generated per-incident, not per-category.
+        </div>
+        <div class="rationale alt-rationale">
+          <strong>Why not fully autonomous agent (ReAct loop)?</strong> A ReAct agent that decides its own next action at every step is powerful but unpredictable. In SRE, unpredictable = dangerous. The Strategist generates the FULL plan upfront, which means: (a) a human can review the plan before execution starts, (b) the plan is deterministic once approved, (c) token cost is bounded (one planning call + N small execution calls, not an open-ended loop). This is the <strong>"plan-then-execute"</strong> pattern from AWS Bedrock's supervisor model, not the "step-by-step" ReAct pattern.
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 4: MCP -->
+    <div class="arch-layer">
+      <div class="layer-dot" style="border-color: var(--orange)"></div>
+      <div class="card">
+        <div class="card-head">
+          <span class="badge badge-orange">L4 · MCP TOOL SURFACE</span>
+          <h3>MCP Server Fleet</h3>
+          <span class="badge badge-cyan" style="margin-left: auto">MCP Python SDK · stdio/SSE</span>
+        </div>
+        <div class="grid-3">
+          <div class="mini-card">
+            <h4>Splunk MCP <span class="badge badge-green" style="font-size:9px; margin-left:6px;">READ</span></h4>
+            <p>search · get_alerts · get_saved_searches · get_field_summary</p>
+          </div>
+          <div class="mini-card">
+            <h4>Dynatrace MCP <span class="badge badge-green" style="font-size:9px; margin-left:6px;">READ</span></h4>
+            <p>get_problems · get_metrics · get_topology · get_events</p>
+          </div>
+          <div class="mini-card">
+            <h4>SLO Tracker MCP <span class="badge badge-green" style="font-size:9px; margin-left:6px;">READ</span></h4>
+            <p>get_slo_status · get_error_budget · get_burn_rate · get_sli_history</p>
+          </div>
+          <div class="mini-card">
+            <h4>AIOps MCP <span class="badge badge-green" style="font-size:9px; margin-left:6px;">READ</span></h4>
+            <p>get_anomalies · get_correlated_alerts · get_change_events · get_topology_diff</p>
+          </div>
+          <div class="mini-card">
+            <h4>K8s / Infra MCP <span class="badge badge-red" style="font-size:9px; margin-left:6px;">WRITE</span></h4>
+            <p>restart_deployment · scale_replicas · rollback_deployment · toggle_feature_flag</p>
+          </div>
+          <div class="mini-card">
+            <h4>Incident Mgmt MCP <span class="badge badge-red" style="font-size:9px; margin-left:6px;">WRITE</span></h4>
+            <p>create_incident · update_severity · page_oncall · post_to_slack</p>
+          </div>
+        </div>
+        <div class="rationale">
+          <strong>Why MCP over direct API clients?</strong>
+          (1) <strong>Tool discovery</strong> — the Strategist's Claude call receives tool schemas from ALL registered MCP servers dynamically. Add a new server, and the Strategist can use its tools immediately without code changes.
+          (2) <strong>Uniform interface</strong> — every tool call returns structured JSON regardless of whether the backend is REST, GraphQL, or gRPC. The engine doesn't need per-service adapters.
+          (3) <strong>Security boundary</strong> — MCP's tool-level permissions let you tag tools as read/write at the protocol level. The engine enforces: write tools → approval gate. This is cleaner than trying to classify arbitrary API calls.
+          (4) <strong>Ecosystem momentum</strong> — Claude, Cursor, Windsurf, and every major AI tool now speaks MCP. Your investment compounds.
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-green" style="margin-top: 24px;">
+      <strong>The Core Invariant:</strong> All read operations (diagnosis, metrics, logs, SLO checks) run autonomously. All write operations (remediation, scaling, restarts, notifications) require explicit human approval. The LLM proposes; a human disposes. This is non-negotiable for production SRE at JPMC's risk tolerance.
+    </div>
+
+  </section>
+
+  <!-- ═══════════════ PANEL: FLOW ═══════════════ -->
+  <section class="panel" id="p-flow">
+
+    <div class="section-label"><span style="color:var(--green)">02</span> End-to-End Execution Flow <span class="line"></span></div>
+    <p style="color:var(--text-dim); font-size:14px; margin-bottom:24px; max-width:700px;">
+      Walk through a real incident: <strong>"CDS API Gateway error rate spike to 12% in production"</strong>.
+      Three phases: Diagnose → Plan → Execute.
+    </p>
+
+    <div class="flow-col">
+
+      <!-- PHASE 1: DIAGNOSE -->
+      <div style="margin-bottom: 8px;">
+        <span class="badge badge-blue" style="font-size:11px; padding:4px 12px;">PHASE 1 — DIAGNOSE</span>
+      </div>
+
+      <div class="flow-node">
+        <div class="flow-rail"><div class="flow-pip tool"></div><div class="flow-wire"></div></div>
+        <div class="flow-body"><div class="card">
+          <div class="card-head"><span class="badge badge-blue">TRIGGER</span><h3>1. Alert Received</h3></div>
+          <p>Dynatrace webhook fires → <code>POST /incidents</code>. Context injected: <code>app=cds-api-gw, env=prod, severity=CRITICAL, error_rate=12.3%</code>. Run record created in SQLite.</p>
+        </div></div>
+      </div>
+
+      <div class="flow-node">
+        <div class="flow-rail"><div class="flow-pip tool"></div><div class="flow-wire"></div></div>
+        <div class="flow-body"><div class="card">
+          <div class="card-head"><span class="badge badge-green">MCP · PARALLEL</span><h3>2. Strategist Gathers Intelligence</h3></div>
+          <p>The Strategist fires <strong>parallel read-only MCP calls</strong> to all registered servers. No LLM call yet — this is pure data gathering.</p>
+          <div class="spawn-group">
+            <div class="spawn-card"><h5>→ dynatrace://get_metrics</h5><p>error_rate, p99_latency, throughput for last 30m</p></div>
+            <div class="spawn-card"><h5>→ splunk://search</h5><p>ERROR logs from cds-api-gw, top messages, stack traces</p></div>
+            <div class="spawn-card"><h5>→ slo_tracker://get_burn_rate</h5><p>Current error budget, 1h/6h/24h burn rates</p></div>
+            <div class="spawn-card"><h5>→ aiops://get_correlated_alerts</h5><p>Other alerts in the same time window across dependent services</p></div>
+            <div class="spawn-card"><h5>→ aiops://get_change_events</h5><p>Recent deployments, config changes, infra events</p></div>
+          </div>
+          <div class="rationale">
+            <strong>Why parallel, not sequential?</strong> These are independent read queries. Running 5 MCP calls in parallel via <code>asyncio.gather()</code> takes ~max(latencies) instead of ~sum(latencies). For typical Splunk (3s) + Dynatrace (1s) + others (1s), that's 3s vs 7s. In incident response, those 4 seconds matter.
+          </div>
+        </div></div>
+      </div>
+
+      <!-- PHASE 2: PLAN -->
+      <div style="margin-bottom: 8px; margin-top: 8px;">
+        <span class="badge badge-purple" style="font-size:11px; padding:4px 12px;">PHASE 2 — PLAN</span>
+      </div>
+
+      <div class="flow-node">
+        <div class="flow-rail"><div class="flow-pip strategist"></div><div class="flow-wire"></div></div>
+        <div class="flow-body"><div class="card" style="border-color: rgba(167,139,250,0.2);">
+          <div class="card-head"><span class="badge badge-purple">STRATEGIST · LLM</span><h3>3. Claude Generates Dynamic Runbook</h3></div>
+          <p>All MCP outputs fed into a single Claude Sonnet call with the <strong>SRE Domain System Prompt</strong>. Claude receives:</p>
+          <p style="margin-top:8px;">
+            • Full tool outputs from step 2 (summarized if over token budget)<br>
+            • Available MCP tools (auto-discovered schemas for all registered servers)<br>
+            • Domain rules (SLO thresholds, escalation policies, known architectural patterns)<br>
+            • Historical context (last 5 runs for this app, if available)
+          </p>
+          <p style="margin-top:8px;">
+            Claude returns a <strong>structured runbook</strong> via <code>tool_use</code> — not free-text. The output is a JSON object conforming to the RunbookSchema Pydantic model, which is then serialized to YAML.
+          </p>
+          <div class="rationale">
+            <strong>Why a single planning call instead of iterative reasoning?</strong> Token economics. One Sonnet call with ~8K context + ~2K output ≈ $0.04. An iterative ReAct loop averaging 6 turns ≈ $0.15+. At 100 incidents/day, that's $4/day vs $15/day — and the plan-then-execute model gives you a reviewable artifact BEFORE anything runs. This is the pattern AWS Bedrock's supervisor uses: plan upfront, execute deterministically.
+          </div>
+          <div class="rationale alt-rationale">
+            <strong>Why Claude Sonnet, not Opus?</strong> For the planning call, Sonnet is sufficient — the task is structured output generation from provided data, not open-ended reasoning. Sonnet is 5x cheaper and 3x faster. Reserve Opus for edge cases where Sonnet's plan fails validation (automatic fallback).
+          </div>
+        </div></div>
+      </div>
+
+      <div class="flow-node">
+        <div class="flow-rail"><div class="flow-pip" style="border-color: var(--yellow);"></div><div class="flow-wire"></div></div>
+        <div class="flow-body"><div class="card">
+          <div class="card-head"><span class="badge badge-yellow">OPTIONAL GATE</span><h3>4. Human Reviews Plan (Configurable)</h3></div>
+          <p>For critical/production environments, the generated runbook is pushed to the UI for human review BEFORE execution begins. The SRE can approve as-is, edit the YAML, or reject and manually investigate. For staging/dev, this gate can be skipped via config.</p>
+        </div></div>
+      </div>
+
+      <!-- PHASE 3: EXECUTE -->
+      <div style="margin-bottom: 8px; margin-top: 8px;">
+        <span class="badge badge-cyan" style="font-size:11px; padding:4px 12px;">PHASE 3 — EXECUTE</span>
+      </div>
+
+      <div class="flow-node">
+        <div class="flow-rail"><div class="flow-pip sub"></div><div class="flow-wire"></div></div>
+        <div class="flow-body"><div class="card">
+          <div class="card-head"><span class="badge badge-cyan">SUB-AGENTS</span><h3>5. Sub-Agents Spawned from Runbook</h3></div>
+          <p>The executor parses the YAML and spawns a sub-agent for each step. Example generated plan for this incident:</p>
+          <div class="spawn-group" style="margin-top: 12px;">
+            <div class="spawn-card">
+              <h5>DiagnosticAgent #1</h5>
+              <p><strong>Deep log analysis.</strong> Run targeted Splunk query for OOM/heap patterns in the stack traces identified in Phase 1.</p>
+              <p style="margin-top:4px; color:var(--blue); font-family:var(--mono); font-size:10px;">→ splunk://search (read)</p>
+            </div>
+            <div class="spawn-card">
+              <h5>DiagnosticAgent #2</h5>
+              <p><strong>Upstream check.</strong> Query Dynatrace topology for CDS gateway's upstream dependencies. Check their error rates.</p>
+              <p style="margin-top:4px; color:var(--blue); font-family:var(--mono); font-size:10px;">→ dynatrace://get_topology (read)</p>
+            </div>
+            <div class="spawn-card">
+              <h5>DecisionAgent</h5>
+              <p><strong>Root cause synthesis.</strong> LLM call with deep-dive outputs. Determines: OOM? Upstream? Config? Returns structured diagnosis.</p>
+              <p style="margin-top:4px; color:var(--purple); font-family:var(--mono); font-size:10px;">→ claude (structured output)</p>
+            </div>
+            <div class="spawn-card" style="border-color: rgba(251,146,60,0.3);">
+              <h5>RemediationAgent ⚠</h5>
+              <p><strong>Rolling restart.</strong> Restart CDS gateway pods one at a time. <strong>GATED — requires human approval.</strong></p>
+              <p style="margin-top:4px; color:var(--red); font-family:var(--mono); font-size:10px;">→ k8s://restart_deployment (write)</p>
+            </div>
+          </div>
+          <div class="rationale">
+            <strong>Why sub-agents instead of a monolithic executor?</strong>
+            (1) <strong>Isolation</strong> — each sub-agent has its own timeout, retry policy, and error boundary. A failing Splunk query doesn't abort the whole run.
+            (2) <strong>Parallelism</strong> — DiagnosticAgent #1 and #2 above run in parallel since they're independent. The runbook schema supports <code>parallel_group</code> declarations.
+            (3) <strong>Typed behavior</strong> — DiagnosticAgents can only call read tools. RemediationAgents can call write tools but are always gated. This is enforced in code, not by LLM compliance.
+            (4) <strong>Observability</strong> — each sub-agent emits its own event stream. The UI shows a per-agent trace, making debugging straightforward.
+          </div>
+        </div></div>
+      </div>
+
+      <div class="flow-node">
+        <div class="flow-rail"><div class="flow-pip gate"></div><div class="flow-wire"></div></div>
+        <div class="flow-body"><div class="card" style="border-color: rgba(251,146,60,0.3);">
+          <div class="card-head"><span class="badge badge-orange">APPROVAL GATE</span><h3>6. Human Approves Remediation</h3></div>
+          <p>RemediationAgent pauses. The approval queue shows: full diagnosis chain, root cause hypothesis (with confidence), proposed action (rolling restart), risk assessment, rollback plan. SRE reviews and approves.</p>
+          <div class="decision-pills">
+            <span class="pill pill-green">✓ Approve — execute as planned</span>
+            <span class="pill pill-orange">✎ Modify — edit params then approve</span>
+            <span class="pill pill-red">✗ Reject — escalate to human investigation</span>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="flow-node">
+        <div class="flow-rail"><div class="flow-pip write"></div><div class="flow-wire"></div></div>
+        <div class="flow-body"><div class="card" style="border-color: rgba(248,113,113,0.2);">
+          <div class="card-head"><span class="badge badge-red">EXECUTE</span><h3>7. Remediation + Verify</h3></div>
+          <p>On approval: RemediationAgent executes <code>k8s://restart_deployment</code>. Logs everything. Then spawns a final VerificationAgent that waits 5 minutes and re-checks error rate via Dynatrace. If recovered → close with summary. If not → escalate with full context attached.</p>
+        </div></div>
+      </div>
+
+    </div>
+
+    <div class="callout callout-green" style="margin-top:28px;">
+      <strong>End-to-end timing estimate:</strong> Phase 1 (parallel MCP): ~3s. Phase 2 (Claude planning): ~4s. Phase 3 (sub-agent execution): ~variable. Total diagnosis-to-plan: <strong>~7 seconds</strong> vs. the typical 10-15 minutes of human context-switching across Splunk, Dynatrace, and Confluence runbooks. That's 100x faster to first hypothesis.
+    </div>
+
+  </section>
+
+  <!-- ═══════════════ PANEL: SCHEMA ═══════════════ -->
+  <section class="panel" id="p-schema">
+
+    <div class="section-label"><span style="color:var(--green)">03</span> Generated Runbook Schema <span class="line"></span></div>
+    <p style="color:var(--text-dim); font-size:14px; margin-bottom:24px; max-width:700px;">
+      This is an <strong>example of what the Strategist generates</strong> for the CDS gateway incident.
+      The schema is defined as a Pydantic model; Claude outputs conforming JSON via <code>tool_use</code>, which is then serialized to YAML for human readability and audit.
+    </p>
+
+    <div class="code-block">
+      <div class="code-bar">
+        <div class="code-dot" style="background:var(--red)"></div>
+        <div class="code-dot" style="background:var(--yellow)"></div>
+        <div class="code-dot" style="background:var(--green)"></div>
+        <span style="margin-left: 8px;">generated_runbook_cds_gw_2026-03-20T14:23:00.yaml</span>
+      </div>
+      <div class="code-body"><span class="cc"># Auto-generated by Strategist Agent</span>
+<span class="cc"># Incident: CDS API Gateway error rate spike (12.3%)</span>
+<span class="cc"># Generated: 2026-03-20T14:23:07Z</span>
+
+<span class="ck">metadata</span>:
+  <span class="ck">run_id</span>: <span class="cv">"run_a7f3c9e2"</span>
+  <span class="ck">app</span>: <span class="cv">"cds-api-gw"</span>
+  <span class="ck">environment</span>: <span class="cv">"prod"</span>
+  <span class="ck">trigger</span>: <span class="cv">"dynatrace_alert_DT-4891"</span>
+  <span class="ck">strategist_model</span>: <span class="cv">"claude-sonnet-4-20250514"</span>
+  <span class="ck">confidence</span>: <span class="cs">0.82</span>
+
+<span class="ck">diagnosis_summary</span>: |
+  <span class="cv">Error rate spiked to 12.3% (baseline 0.4%) at 14:18 UTC.
+  Splunk logs show java.lang.OutOfMemoryError in 73% of error traces.
+  A deployment (build-4891) was pushed at 14:15 UTC — 3 min before spike.
+  SLO burn rate at 14.2x (critical). No upstream dependency issues detected.
+  Root cause hypothesis: Memory leak introduced in build-4891.</span>
+
+<span class="ck">steps</span>:
+  - <span class="ck">id</span>: <span class="cv">"deep_heap_analysis"</span>
+    <span class="ck">type</span>: <span class="cv">"diagnostic"</span>
+    <span class="ck">agent</span>: <span class="cv">"DiagnosticAgent"</span>
+    <span class="ck">description</span>: <span class="cv">"Search for heap dump patterns and GC pressure indicators"</span>
+    <span class="ck">tool</span>:
+      <span class="ck">server</span>: <span class="cv">"splunk"</span>
+      <span class="ck">method</span>: <span class="cv">"search"</span>
+      <span class="ck">params</span>:
+        <span class="ck">query</span>: <span class="cv">"index=app source=cds-api-gw (OutOfMemoryError OR GCOverheadLimit OR heap) | stats count by host"</span>
+        <span class="ck">timerange</span>: <span class="cv">"-30m"</span>
+    <span class="ck">timeout</span>: <span class="cv">"30s"</span>
+
+  - <span class="ck">id</span>: <span class="cv">"check_deployment_diff"</span>
+    <span class="ck">type</span>: <span class="cv">"diagnostic"</span>
+    <span class="ck">agent</span>: <span class="cv">"DiagnosticAgent"</span>
+    <span class="ck">description</span>: <span class="cv">"Get details of build-4891 deployment"</span>
+    <span class="ck">parallel_group</span>: <span class="cv">"deep_dive"</span>     <span class="cc"># runs in parallel with deep_heap_analysis</span>
+    <span class="ck">tool</span>:
+      <span class="ck">server</span>: <span class="cv">"aiops"</span>
+      <span class="ck">method</span>: <span class="cv">"get_change_events"</span>
+      <span class="ck">params</span>:
+        <span class="ck">service</span>: <span class="cv">"cds-api-gw"</span>
+        <span class="ck">timerange</span>: <span class="cv">"-1h"</span>
+        <span class="ck">type</span>: <span class="cv">"deployment"</span>
+    <span class="ck">timeout</span>: <span class="cv">"15s"</span>
+
+  - <span class="ck">id</span>: <span class="cv">"root_cause_decision"</span>
+    <span class="ck">type</span>: <span class="cv">"decision"</span>
+    <span class="ck">agent</span>: <span class="cv">"DecisionAgent"</span>
+    <span class="ck">depends_on</span>: [<span class="cv">"deep_heap_analysis"</span>, <span class="cv">"check_deployment_diff"</span>]
+    <span class="ck">description</span>: <span class="cv">"Synthesize findings and confirm root cause"</span>
+    <span class="ck">llm_prompt</span>: |
+      <span class="cv">Analyze heap dump data and deployment info. Confirm or refute:
+      hypothesis: memory leak in build-4891.
+      Return: confirmed (bool), confidence (float), recommended_action (enum).</span>
+    <span class="ck">output_schema</span>:
+      <span class="ck">confirmed</span>: <span class="cb">bool</span>
+      <span class="ck">confidence</span>: <span class="cb">float</span>
+      <span class="ck">recommended_action</span>: <span class="cv">"enum[rollback, restart, scale_up, escalate]"</span>
+      <span class="ck">reasoning</span>: <span class="cb">string</span>
+    <span class="ck">branches</span>:
+      <span class="ck">rollback</span>: <span class="cv">"execute_rollback"</span>
+      <span class="ck">restart</span>: <span class="cv">"execute_restart"</span>
+      <span class="ck">escalate</span>: <span class="cv">"escalate_to_oncall"</span>
+
+  - <span class="ck">id</span>: <span class="cv">"execute_rollback"</span>
+    <span class="ck">type</span>: <span class="cv">"remediation"</span>            <span class="cc"># ← triggers approval gate</span>
+    <span class="ck">agent</span>: <span class="cv">"RemediationAgent"</span>
+    <span class="ck">approval_required</span>: <span class="cb">true</span>         <span class="cc"># ← ENFORCED, cannot be false for write ops</span>
+    <span class="ck">description</span>: <span class="cv">"Rollback to previous build"</span>
+    <span class="ck">tool</span>:
+      <span class="ck">server</span>: <span class="cv">"kubernetes"</span>
+      <span class="ck">method</span>: <span class="cv">"rollback_deployment"</span>
+      <span class="ck">params</span>:
+        <span class="ck">deployment</span>: <span class="cv">"cds-api-gw"</span>
+        <span class="ck">namespace</span>: <span class="cv">"prod"</span>
+        <span class="ck">to_revision</span>: <span class="cv">"previous"</span>
+    <span class="ck">rollback_plan</span>: <span class="cv">"Re-deploy build-4891 if rollback causes regression"</span>
+    <span class="ck">risk</span>: <span class="cv">"medium"</span>
+
+  - <span class="ck">id</span>: <span class="cv">"verify_recovery"</span>
+    <span class="ck">type</span>: <span class="cv">"diagnostic"</span>
+    <span class="ck">agent</span>: <span class="cv">"DiagnosticAgent"</span>
+    <span class="ck">depends_on</span>: [<span class="cv">"execute_rollback"</span>]
+    <span class="ck">wait_before</span>: <span class="cv">"5m"</span>              <span class="cc"># wait for rollback to propagate</span>
+    <span class="ck">description</span>: <span class="cv">"Verify error rate has recovered"</span>
+    <span class="ck">tool</span>:
+      <span class="ck">server</span>: <span class="cv">"dynatrace"</span>
+      <span class="ck">method</span>: <span class="cv">"get_metrics"</span>
+      <span class="ck">params</span>:
+        <span class="ck">entity</span>: <span class="cv">"cds-api-gw"</span>
+        <span class="ck">metrics</span>: [<span class="cv">"error_rate"</span>, <span class="cv">"p99_latency"</span>]
+        <span class="ck">timeframe</span>: <span class="cv">"last-5m"</span>
+    <span class="ck">success_criteria</span>:
+      <span class="ck">error_rate_below</span>: <span class="cs">1.0</span>        <span class="cc"># percent</span>
+    <span class="ck">on_failure</span>: <span class="cv">"escalate_to_oncall"</span>
+
+  - <span class="ck">id</span>: <span class="cv">"escalate_to_oncall"</span>
+    <span class="ck">type</span>: <span class="cv">"remediation"</span>
+    <span class="ck">agent</span>: <span class="cv">"RemediationAgent"</span>
+    <span class="ck">approval_required</span>: <span class="cb">false</span>        <span class="cc"># notification is safe to auto-send</span>
+    <span class="ck">description</span>: <span class="cv">"Page on-call with full context"</span>
+    <span class="ck">tool</span>:
+      <span class="ck">server</span>: <span class="cv">"incident_mgmt"</span>
+      <span class="ck">method</span>: <span class="cv">"page_oncall"</span>
+      <span class="ck">params</span>:
+        <span class="ck">service</span>: <span class="cv">"cds-api-gw"</span>
+        <span class="ck">severity</span>: <span class="cv">"P1"</span>
+        <span class="ck">context</span>: <span class="cv">"{{full_run_summary}}"</span></div>
+    </div>
+
+    <div class="rationale" style="margin-top: 0;">
+      <strong>Key schema design decisions:</strong>
+      (1) <code>parallel_group</code> — steps in the same group run concurrently. The executor uses <code>asyncio.gather()</code> for same-group steps.
+      (2) <code>depends_on</code> — explicit DAG edges. The executor won't start a step until all dependencies are resolved.
+      (3) <code>output_schema</code> on decision steps — enforced via Claude's <code>tool_use</code>. The LLM MUST return typed, structured output. No free-text parsing.
+      (4) <code>branches</code> — deterministic routing. The DecisionAgent's output maps directly to the next step ID.
+      (5) <code>approval_required: true</code> is <strong>auto-set by the engine for any step where <code>type: remediation</code> AND the tool is tagged as write</strong>. Even if the Strategist generates <code>false</code>, the engine overrides it. Defense in depth.
+    </div>
+
+  </section>
+
+  <!-- ═══════════════ PANEL: DECISIONS ═══════════════ -->
+  <section class="panel" id="p-decisions">
+
+    <div class="section-label"><span style="color:var(--green)">04</span> Architecture Decision Log <span class="line"></span></div>
+    <p style="color:var(--text-dim); font-size:14px; margin-bottom:24px; max-width:700px;">
+      Every architectural choice, stress-tested. What was chosen, what was rejected, and why.
+    </p>
+
+    <div class="card" style="overflow-x: auto;">
+      <div class="decision-row" style="border-bottom: 2px solid var(--border);">
+        <div class="dec-q" style="color:var(--text-dim); font-size:11px;">DECISION</div>
+        <div class="dec-a" style="color:var(--green); font-family:var(--mono); font-size:11px;">CHOSEN → WHY</div>
+        <div class="dec-a" style="color:var(--text-dim); font-family:var(--mono); font-size:11px;">REJECTED → WHY NOT</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="dec-q">Agent Pattern</div>
+        <div class="dec-a dec-chosen"><strong>Supervisor (plan-then-execute)</strong> — Strategist generates full plan, sub-agents execute deterministically. Auditable, reviewable, cost-bounded. Matches AWS Bedrock's proven supervisor pattern.</div>
+        <div class="dec-a dec-rejected"><strong>ReAct loop</strong> — Each step decides next action. Unpredictable cost, hard to audit, can hallucinate tool calls. Dangerous for production SRE. <strong>Peer-to-peer</strong> — No central coordinator. Harder to debug, no single plan to review.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="dec-q">Runbook Origin</div>
+        <div class="dec-a dec-chosen"><strong>LLM-generated per incident</strong> — Adapts to actual signals. Handles combinatorial failure modes. New tools auto-incorporated. Domain knowledge lives in system prompt (easier to maintain than YAML branches).</div>
+        <div class="dec-a dec-rejected"><strong>Pre-written static YAML</strong> — Can't anticipate novel failures. Every new failure pattern = new runbook. Maintenance burden grows linearly with incident categories.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="dec-q">Orchestration Framework</div>
+        <div class="dec-a dec-chosen"><strong>Pure Python asyncio</strong> — ~300 lines of executor code. No framework lock-in. Full control over MCP client lifecycle, token budgets, approval gates. Easy to debug with standard Python tools.</div>
+        <div class="dec-a dec-rejected"><strong>LangGraph</strong> — Graph DSL adds abstraction without capability gain for this use case. Large dep tree. <strong>CrewAI</strong> — Opinionated about agent roles, poor MCP support. <strong>Temporal</strong> — Excellent but adds infra (server + workers). Clear v2 upgrade path.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="dec-q">LLM Model</div>
+        <div class="dec-a dec-chosen"><strong>Claude Sonnet 4</strong> for planning + decisions. Fast (2-4s), cheap ($3/1M input), excellent tool_use. Structured output via tool schemas eliminates parsing. <strong>Opus fallback</strong> for when Sonnet plan fails validation.</div>
+        <div class="dec-a dec-rejected"><strong>GPT-4o</strong> — Strong but more expensive, less reliable structured output. <strong>Local models</strong> — Insufficient reasoning for root cause analysis. <strong>Opus-only</strong> — 5x cost for marginal planning quality improvement.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="dec-q">Tool Interface</div>
+        <div class="dec-a dec-chosen"><strong>MCP (Model Context Protocol)</strong> — Universal tool discovery. Read/write tagging at protocol level. Claude native support. Ecosystem growing fast. Your existing Splunk/Dynatrace servers already speak MCP.</div>
+        <div class="dec-a dec-rejected"><strong>Direct API clients</strong> — Per-service adapters, no unified discovery, manual read/write classification. <strong>OpenAPI</strong> — Good for REST but doesn't cover non-REST tools. <strong>Custom tool format</strong> — Reinventing MCP with worse ecosystem.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="dec-q">State Persistence</div>
+        <div class="dec-a dec-chosen"><strong>SQLite + SQLModel</strong> — Zero ops. Single file. Handles 100 concurrent runs easily. Full ACID. Perfect for MVP. Migration to Postgres is a config change, not a rewrite.</div>
+        <div class="dec-a dec-rejected"><strong>PostgreSQL</strong> — Adds container/service to manage. Overkill for &lt;1000 runs/day MVP. <strong>Redis</strong> — Volatile. Incidents need durable audit trails. <strong>File-based</strong> — No query capability for run history.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="dec-q">Sub-Agent Design</div>
+        <div class="dec-a dec-chosen"><strong>Typed agents (Diagnostic/Decision/Remediation)</strong> — Each type has hardcoded permissions. DiagnosticAgent literally cannot call write tools (enforced in code, not by LLM). Separation of concerns. Easy to test in isolation.</div>
+        <div class="dec-a dec-rejected"><strong>Generic agent</strong> — One agent type with runtime permissions. Relies on LLM to respect boundaries. One hallucination = unauthorized write. Unacceptable risk.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="dec-q">Human-in-the-Loop</div>
+        <div class="dec-a dec-chosen"><strong>2-tier gating</strong> — (1) Optional plan review before execution. (2) Mandatory approval before any write operation. Defense in depth. Configurable per environment (prod=both gates, staging=write-only, dev=none).</div>
+        <div class="dec-a dec-rejected"><strong>Fully autonomous</strong> — Your risk team will kill this project day one. <strong>Approve every step</strong> — Approval fatigue. SREs will stop using it within a week.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="dec-q">Token Cost Control</div>
+        <div class="dec-a dec-chosen"><strong>Context Accumulator with 3-tier summarization</strong> — Raw (&lt;2K tokens), extractive (2K-8K), abstractive (8K+). Budget of 12K tokens per planning call. At $3/1M tokens, this caps cost at ~$0.04/incident for planning.</div>
+        <div class="dec-a dec-rejected"><strong>Send everything raw</strong> — A single Splunk search can return 50KB (~15K tokens). 5 parallel calls = 75K tokens = $0.22 just for input. At 100 incidents/day = $22/day just for context. Unsustainable.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="dec-q">Frontend</div>
+        <div class="dec-a dec-chosen"><strong>React + Vite + Tailwind</strong> — Fast dev, WebSocket-native for real-time streaming, Monaco editor for YAML editing. Internal tool = no SSR needed.</div>
+        <div class="dec-a dec-rejected"><strong>Next.js</strong> — SSR/SEO irrelevant for internal tool. <strong>HTMX</strong> — Poor WebSocket story for real-time execution streaming. <strong>Streamlit</strong> — Fast prototype but can't handle approval queue complexity or custom YAML editor.</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════ PANEL: STRUCTURE ═══════════════ -->
+  <section class="panel" id="p-structure">
+
+    <div class="section-label"><span style="color:var(--green)">05</span> Project Structure + Implementation Order <span class="line"></span></div>
+
+    <div class="code-block">
+      <div class="code-bar">
+        <div class="code-dot" style="background:var(--red)"></div>
+        <div class="code-dot" style="background:var(--yellow)"></div>
+        <div class="code-dot" style="background:var(--green)"></div>
+        <span style="margin-left:8px;">sre-agent-engine/</span>
+      </div>
+      <div class="code-body"><span class="ck">sre-agent-engine/</span>
+├── <span class="ck">backend/</span>
+│   ├── <span class="cv">main.py</span>                      <span class="cc"># FastAPI entry · uvicorn · CORS · lifespan</span>
+│   │
+│   ├── <span class="ck">api/</span>                          <span class="cc"># HTTP/WS endpoints</span>
+│   │   ├── <span class="cv">incidents.py</span>              <span class="cc"># POST /incidents · trigger runs</span>
+│   │   ├── <span class="cv">runs.py</span>                   <span class="cc"># GET /runs · WS /runs/{id}/stream</span>
+│   │   ├── <span class="cv">approvals.py</span>              <span class="cc"># POST /approvals/{id} · approve/reject</span>
+│   │   ├── <span class="cv">runbooks.py</span>               <span class="cc"># GET /runbooks/{id} · version history</span>
+│   │   └── <span class="cv">mcp_registry.py</span>           <span class="cc"># CRUD for MCP server configs</span>
+│   │
+│   ├── <span class="ck">engine/</span>                       <span class="cc"># THE CORE — 4 files do all the work</span>
+│   │   ├── <span class="cr">strategist.py</span>             <span class="cc"># Phase 1+2: gather intelligence → Claude → YAML</span>
+│   │   ├── <span class="cr">executor.py</span>               <span class="cc"># Phase 3: parse YAML → spawn sub-agents → run DAG</span>
+│   │   ├── <span class="cr">agents.py</span>                 <span class="cc"># DiagnosticAgent, DecisionAgent, RemediationAgent</span>
+│   │   ├── <span class="cv">context_accumulator.py</span>    <span class="cc"># Token budgeting + 3-tier summarization</span>
+│   │   ├── <span class="cv">approval_gate.py</span>          <span class="cc"># Pause/resume mechanics · timeout · escalation</span>
+│   │   └── <span class="cv">state.py</span>                  <span class="cc"># Run state machine: pending→diagnosing→planning→</span>
+│   │                                   <span class="cc">#   executing→awaiting_approval→remediating→verifying→</span>
+│   │                                   <span class="cc">#   resolved|escalated|failed</span>
+│   │
+│   ├── <span class="ck">mcp/</span>                          <span class="cc"># MCP client management</span>
+│   │   ├── <span class="cv">client_pool.py</span>            <span class="cc"># Connection pool · health checks · reconnection</span>
+│   │   ├── <span class="cv">tool_registry.py</span>          <span class="cc"># Auto-discover tools · cache schemas · tag read/write</span>
+│   │   └── <span class="cv">normalizer.py</span>             <span class="cc"># Standardize MCP responses → common format</span>
+│   │
+│   ├── <span class="ck">models/</span>                       <span class="cc"># Pydantic + SQLModel</span>
+│   │   ├── <span class="cv">runbook_schema.py</span>         <span class="cc"># THE schema — Pydantic model for generated runbooks</span>
+│   │   ├── <span class="cv">incident.py</span>               <span class="cc"># Incident input model</span>
+│   │   ├── <span class="cv">run.py</span>                    <span class="cc"># Run state + step output models</span>
+│   │   └── <span class="cv">db.py</span>                     <span class="cc"># SQLModel tables + SQLite init</span>
+│   │
+│   ├── <span class="ck">prompts/</span>                      <span class="cc"># System prompts (version controlled)</span>
+│   │   ├── <span class="cv">strategist_system.md</span>      <span class="cc"># Domain expertise · SLO rules · escalation policy</span>
+│   │   └── <span class="cv">decision_agent.md</span>         <span class="cc"># Root cause synthesis prompt template</span>
+│   │
+│   └── <span class="cv">config.py</span>                    <span class="cc"># Settings: model, token budgets, timeouts, env flags</span>
+│
+├── <span class="ck">frontend/</span>                         <span class="cc"># React + Vite + Tailwind</span>
+│   └── <span class="ck">src/</span>
+│       ├── <span class="cv">App.jsx</span>
+│       ├── <span class="ck">components/</span>
+│       │   ├── <span class="cv">IncidentFeed.jsx</span>      <span class="cc"># Live run list</span>
+│       │   ├── <span class="cv">RunTrace.jsx</span>          <span class="cc"># Step-by-step execution viewer</span>
+│       │   ├── <span class="cv">ApprovalQueue.jsx</span>     <span class="cc"># Review + approve remediation</span>
+│       │   ├── <span class="cv">RunbookViewer.jsx</span>     <span class="cc"># YAML viewer/editor (Monaco)</span>
+│       │   └── <span class="cv">McpRegistry.jsx</span>       <span class="cc"># Server management</span>
+│       └── <span class="ck">hooks/</span>
+│           └── <span class="cv">useRunStream.js</span>       <span class="cc"># WebSocket hook for live updates</span>
+│
+├── <span class="cv">docker-compose.yaml</span>              <span class="cc"># backend + frontend + optional MCP servers</span>
+├── <span class="cv">pyproject.toml</span>                    <span class="cc"># deps: fastapi, anthropic, mcp, sqlmodel, pydantic</span>
+└── <span class="cv">README.md</span></div>
+    </div>
+
+    <div class="section-label" style="margin-top:32px;"><span style="color:var(--green)">06</span> Build Order — 4-Week Sprint <span class="line"></span></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><span class="badge badge-green">WEEK 1</span><h3>Engine Core (No UI)</h3></div>
+        <p style="margin-bottom:8px;"><strong>Goal:</strong> Strategist → Generated Runbook → Execution, working end-to-end via CLI.</p>
+        <p>
+          • <code>models/runbook_schema.py</code> — the Pydantic schema<br>
+          • <code>mcp/client_pool.py</code> — connect to 2 real MCP servers (Splunk + Dynatrace)<br>
+          • <code>engine/strategist.py</code> — parallel MCP gather + Claude planning call<br>
+          • <code>engine/agents.py</code> — DiagnosticAgent only (read-only)<br>
+          • <code>engine/executor.py</code> — sequential step execution<br>
+          • CLI trigger: <code>python -m backend.cli --app cds-api-gw --env prod</code>
+        </p>
+        <div class="callout callout-green" style="margin-top:12px;"><strong>Milestone:</strong> Feed an alert, get a generated YAML runbook, see diagnostic steps execute against real MCP servers. All via terminal output.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="badge badge-blue">WEEK 2</span><h3>Approval Gate + Write Ops</h3></div>
+        <p style="margin-bottom:8px;"><strong>Goal:</strong> Full remediation path with human gating.</p>
+        <p>
+          • <code>engine/approval_gate.py</code> — pause/resume with stdin for now<br>
+          • <code>engine/agents.py</code> — add RemediationAgent + DecisionAgent<br>
+          • Parallel execution via <code>parallel_group</code><br>
+          • DAG dependency resolution in executor<br>
+          • <code>engine/context_accumulator.py</code> — 3-tier summarization<br>
+          • Connect K8s MCP server (or mock) for write operations<br>
+          • <code>engine/state.py</code> — full state machine + SQLite persistence
+        </p>
+        <div class="callout callout-green" style="margin-top:12px;"><strong>Milestone:</strong> Full incident lifecycle: diagnose → plan → gate → remediate → verify. Durable — can resume after crash.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="badge badge-purple">WEEK 3</span><h3>API + UI</h3></div>
+        <p style="margin-bottom:8px;"><strong>Goal:</strong> Web-based operations dashboard with live streaming.</p>
+        <p>
+          • FastAPI endpoints + WebSocket streaming<br>
+          • React dashboard: IncidentFeed, RunTrace, ApprovalQueue<br>
+          • Monaco-based RunbookViewer for generated YAML<br>
+          • MCP Registry UI<br>
+          • Webhook receiver for Dynatrace/PagerDuty alerts<br>
+          • Docker Compose for single-command deployment
+        </p>
+        <div class="callout callout-green" style="margin-top:12px;"><strong>Milestone:</strong> Demo-able product. Trigger from webhook, watch diagnosis stream in real-time, approve remediation from UI.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="badge badge-orange">WEEK 4</span><h3>Hardening + Real Playbooks</h3></div>
+        <p style="margin-bottom:8px;"><strong>Goal:</strong> Production-adjacent quality.</p>
+        <p>
+          • Connect ALL your MCP servers (SLO tracker, AIOps, incident mgmt)<br>
+          • Tune Strategist system prompt with real incident patterns from CDS gateway<br>
+          • Error handling: MCP timeouts, LLM failures, approval timeouts<br>
+          • Retry logic with exponential backoff per sub-agent<br>
+          • Audit logging for compliance<br>
+          • Run history with search/filter<br>
+          • System prompt versioning (git-tracked prompts/)
+        </p>
+        <div class="callout callout-green" style="margin-top:12px;"><strong>Milestone:</strong> Ready for controlled pilot with your team on a non-critical service.</div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:32px;"><span style="color:var(--orange)">07</span> What's NOT in MVP (v2 Roadmap) <span class="line"></span></div>
+    <div class="grid-3">
+      <div class="mini-card"><h4 style="color:var(--orange)">Confidence-based auto-approve</h4><p>If same runbook pattern approved 20+ times → offer auto-approve with 30s countdown. Prevents approval fatigue.</p></div>
+      <div class="mini-card"><h4 style="color:var(--orange)">Temporal migration</h4><p>Move executor to Temporal workflows for durable, multi-node execution. Critical for scaling past 100 incidents/day.</p></div>
+      <div class="mini-card"><h4 style="color:var(--orange)">Runbook learning loop</h4><p>Feed resolved incident data back into strategist prompt. RAG over historical runbooks to improve future plans.</p></div>
+      <div class="mini-card"><h4 style="color:var(--orange)">Visual runbook builder</h4><p>Drag-and-drop DAG editor for manually creating/editing runbooks. Nice UX layer over the YAML schema.</p></div>
+      <div class="mini-card"><h4 style="color:var(--orange)">Slack/Teams integration</h4><p>Approve remediation from Slack. Get diagnosis summaries in incident channels. ChatOps-native.</p></div>
+      <div class="mini-card"><h4 style="color:var(--orange)">RBAC</h4><p>Role-based approval flows. Junior SRE can approve restarts, senior SRE required for rollbacks, manager for scaling.</p></div>
+    </div>
+
+  </section>
+
+</div>
+
+<script>
+  document.getElementById('nav').addEventListener('click', e => {
+    const btn = e.target.closest('.nav-btn');
+    if (!btn) return;
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('visible'));
+    document.getElementById('p-' + btn.dataset.tab).classList.add('visible');
+  });
+</script>
+</body>
+</html>
