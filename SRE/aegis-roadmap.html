@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEGIS — Module Map & Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#060710;--s1:#0c0e19;--s2:#131626;--s3:#1a1e32;--s4:#222840;
+  --bdr:#262d48;--bdr2:#384066;
+  --t:#c4cbdf;--td:#586080;--tb:#e8ecf6;
+  --grn:#3ee8b5;--grn0:rgba(62,232,181,.06);--grn1:rgba(62,232,181,.12);--grn2:rgba(62,232,181,.22);
+  --blu:#5a9df4;--blu0:rgba(90,157,244,.06);--blu1:rgba(90,157,244,.12);--blu2:rgba(90,157,244,.22);
+  --pur:#9b7df0;--pur0:rgba(155,125,240,.06);--pur1:rgba(155,125,240,.12);--pur2:rgba(155,125,240,.22);
+  --org:#ef9a3e;--org0:rgba(239,154,62,.06);--org1:rgba(239,154,62,.12);--org2:rgba(239,154,62,.22);
+  --red:#ef6868;--red0:rgba(239,104,104,.06);--red1:rgba(239,104,104,.12);--red2:rgba(239,104,104,.22);
+  --cyn:#30d4dd;--cyn0:rgba(48,212,221,.06);--cyn1:rgba(48,212,221,.12);
+  --ylw:#e4c33c;--ylw0:rgba(228,195,60,.06);--ylw1:rgba(228,195,60,.12);
+  --pnk:#e87da3;--pnk0:rgba(232,125,163,.06);--pnk1:rgba(232,125,163,.12);
+  --mono:'Geist Mono',monospace;--sans:'Plus Jakarta Sans',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--t);font-family:var(--sans);line-height:1.6}
+.w{max-width:1360px;margin:0 auto;padding:48px 24px 100px}
+
+/* Header */
+.hdr{border-bottom:1px solid var(--bdr);padding-bottom:36px;margin-bottom:40px}
+.hdr .ey{font-family:var(--mono);font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--grn);margin-bottom:14px}
+.hdr h1{font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-2px;color:var(--tb);line-height:1.1}
+.hdr h1 em{font-style:normal;color:var(--grn)}
+.hdr .lead{margin-top:12px;font-size:15px;color:var(--td);max-width:780px;line-height:1.7}
+.hdr .lead strong{color:var(--t)}
+
+/* Nav */
+.nav{display:flex;gap:2px;background:var(--s1);border-radius:10px;padding:4px;margin-bottom:36px;overflow-x:auto;width:fit-content;max-width:100%}
+.nb{padding:10px 16px;border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:500;cursor:pointer;border:1px solid transparent;background:transparent;color:var(--td);white-space:nowrap;transition:all .15s}
+.nb:hover{color:var(--t);background:var(--s2)}
+.nb.on{color:var(--grn);background:var(--grn0);border-color:var(--grn2)}
+
+/* Panels */
+.pn{display:none}.pn.vis{display:block;animation:up .25s ease}
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Section labels */
+.sl{font-family:var(--mono);font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--td);margin:28px 0 16px;display:flex;align-items:center;gap:10px}
+.sl .ln{flex:1;height:1px;background:var(--bdr)}
+
+/* Cards */
+.cd{background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:24px;margin-bottom:16px;transition:border-color .15s}
+.cd:hover{border-color:var(--bdr2)}
+.cd h3{font-size:17px;font-weight:700;color:var(--tb);margin-bottom:6px}
+.cd p{font-size:14px;color:var(--td);line-height:1.7}
+.cd strong{color:var(--t)}
+
+/* Badges */
+.b{font-family:var(--mono);font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;letter-spacing:.4px;display:inline-block}
+.b-grn{background:var(--grn0);color:var(--grn);border:1px solid var(--grn2)}
+.b-blu{background:var(--blu0);color:var(--blu);border:1px solid var(--blu2)}
+.b-pur{background:var(--pur0);color:var(--pur);border:1px solid var(--pur2)}
+.b-org{background:var(--org0);color:var(--org);border:1px solid var(--org2)}
+.b-red{background:var(--red0);color:var(--red);border:1px solid var(--red2)}
+.b-cyn{background:var(--cyn0);color:var(--cyn);border:1px solid rgba(48,212,221,.22)}
+.b-ylw{background:var(--ylw0);color:var(--ylw);border:1px solid rgba(228,195,60,.22)}
+.b-pnk{background:var(--pnk0);color:var(--pnk);border:1px solid rgba(232,125,163,.22)}
+.b-done{background:rgba(62,232,181,.15);color:var(--grn);border:1px solid var(--grn)}
+
+/* Module cards */
+.mod{background:var(--s2);border:1px solid var(--bdr);border-radius:10px;padding:20px;transition:all .15s}
+.mod:hover{border-color:var(--bdr2);transform:translateY(-1px)}
+.mod h4{font-size:14px;font-weight:700;color:var(--tb);margin-bottom:6px}
+.mod p{font-size:12.5px;color:var(--td);line-height:1.6}
+.mod .meta{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+
+/* Grid */
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+
+/* Current state block */
+.cur{background:var(--grn0);border:1px solid var(--grn2);border-radius:10px;padding:20px;margin-bottom:24px}
+.cur h3{color:var(--grn);font-size:15px;margin-bottom:8px}
+.cur p{font-size:13px;color:var(--grn);line-height:1.7;opacity:.85}
+
+/* Gap block */
+.gap{background:var(--red0);border:1px solid var(--red2);border-radius:10px;padding:20px;margin-bottom:24px}
+.gap h3{color:var(--red);font-size:15px;margin-bottom:8px}
+.gap p{font-size:13px;color:var(--red);line-height:1.7;opacity:.85}
+
+/* Roadmap timeline */
+.tl{position:relative;padding-left:32px;margin-top:20px}
+.tl::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--bdr)}
+.tl-item{position:relative;margin-bottom:24px}
+.tl-item::before{content:'';position:absolute;left:-28px;top:6px;width:14px;height:14px;border-radius:50%;border:2px solid var(--grn);background:var(--bg);z-index:1}
+.tl-item.done::before{background:var(--grn)}
+.tl-item.active::before{border-color:var(--blu);background:var(--blu);box-shadow:0 0 8px rgba(90,157,244,.4)}
+.tl-item.future::before{border-color:var(--td)}
+.tl-item .tl-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.tl-item h4{font-size:15px;font-weight:700;color:var(--tb)}
+.tl-item .tl-body{font-size:13px;color:var(--td);line-height:1.7}
+.tl-modules{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tl-mod{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;background:var(--s3);border:1px solid var(--bdr);color:var(--t)}
+.tl-metric{margin-top:10px;padding:10px 14px;background:var(--s3);border-radius:8px;font-size:12px;display:flex;gap:16px;flex-wrap:wrap}
+.tl-metric span{color:var(--td)}
+.tl-metric strong{color:var(--grn)}
+
+/* Capability matrix */
+.cap-grid{display:grid;grid-template-columns:200px repeat(4,1fr);gap:0;border:1px solid var(--bdr);border-radius:10px;overflow:hidden;font-size:12px}
+.cap-cell{padding:12px;border-bottom:1px solid var(--bdr);border-right:1px solid var(--bdr);display:flex;align-items:center}
+.cap-cell:last-child{border-right:none}
+.cap-hdr{background:var(--s2);font-family:var(--mono);font-weight:600;color:var(--tb);font-size:11px}
+.cap-row-hdr{background:var(--s1);font-weight:600;color:var(--t)}
+.cap-yes{color:var(--grn)}
+.cap-partial{color:var(--ylw)}
+.cap-no{color:var(--td)}
+
+@media(max-width:800px){.g2,.g3{grid-template-columns:1fr}.cap-grid{font-size:10px;grid-template-columns:140px repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<div class="w">
+
+<header class="hdr">
+  <div class="ey">AEGIS · Strategic Roadmap</div>
+  <h1>From MVP to <em>Production AIOps</em></h1>
+  <div class="lead">
+    AEGIS (Automated Engine for Guided Incident Strategy) has a working MVP:
+    trigger → gather intelligence → strategist generates runbook → basic execution.
+    This document maps <strong>every module needed</strong> for a production-grade AIOps solution
+    and sequences them into a phased roadmap with measurable milestones.
+  </div>
+</header>
+
+<nav class="nav" id="nav">
+  <button class="nb on" data-t="state">Current State</button>
+  <button class="nb" data-t="modules">9 Module Domains</button>
+  <button class="nb" data-t="roadmap">Phased Roadmap</button>
+  <button class="nb" data-t="matrix">Capability Matrix</button>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CURRENT STATE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="pn vis" id="p-state">
+
+<div class="cur">
+  <h3>✓ What the MVP Proved</h3>
+  <p>
+    <strong>MCP connectivity works</strong> — Splunk, Dynatrace, Confluence, Jira all reachable via MCP servers on VDI.<br>
+    <strong>Parallel intelligence gathering works</strong> — all 4 tools queried concurrently, real production data returned.<br>
+    <strong>Claude generates usable runbooks</strong> — the Strategist produces YAML runbooks from real signals that SREs recognize as sensible.<br>
+    <strong>Basic UI works</strong> — trigger incident, watch intelligence gather, see generated runbook.
+  </p>
+</div>
+
+<div class="gap">
+  <h3>✗ What's Missing for Production Value</h3>
+  <p>
+    <strong>No orchestration logic</strong> — runbook steps don't actually execute against tools, no approval gates, no branch logic.<br>
+    <strong>No alert correlation</strong> — system reacts to one trigger at a time, can't group related alerts or suppress noise.<br>
+    <strong>No topology awareness</strong> — doesn't know CDS gateway depends on Pithos depends on IBM CM. Can't trace blast radius.<br>
+    <strong>No historical learning</strong> — every incident starts from zero. No memory of past incidents, resolutions, or patterns.<br>
+    <strong>No proactive detection</strong> — purely reactive. Only runs when manually triggered, not when anomalies emerge.<br>
+    <strong>No change correlation</strong> — doesn't automatically link deployments/config changes to emerging issues.<br>
+    <strong>No metric tracking</strong> — no MTTR measurement, no cost tracking, no quality scoring of generated runbooks.<br>
+    <strong>No audit trail</strong> — can't prove what the system did, why, and who approved it.
+  </p>
+</div>
+
+<div class="cd">
+  <h3>The Gap in One Sentence</h3>
+  <p>
+    The MVP can <strong>diagnose and plan</strong> for a single, manually-triggered incident using real data.
+    A production AIOps solution must <strong>detect, correlate, diagnose, plan, execute, verify, learn, and improve</strong>
+    across continuous alert streams — autonomously for known patterns, human-gated for novel ones.
+  </p>
+</div>
+
+<div class="sl"><span style="color:var(--grn)">Industry Benchmark</span><span class="ln"></span></div>
+<div class="cd">
+  <p>Top-tier AIOps platforms (BigPanda, Datadog Event Management, ServiceNow ITOM) deliver these core capabilities:</p>
+  <p style="margin-top:12px;">
+    <strong>1. Alert noise reduction</strong> — 90-99% reduction via correlation and deduplication. <em>We have: 0%.</em><br>
+    <strong>2. Topology-aware RCA</strong> — trace causality through service dependency graphs. <em>We have: flat correlation only.</em><br>
+    <strong>3. Change impact analysis</strong> — auto-link deployments/config changes to emerging incidents. <em>We have: manual.</em><br>
+    <strong>4. Predictive alerting</strong> — detect anomalies before they breach thresholds. <em>We have: nothing.</em><br>
+    <strong>5. Automated remediation</strong> — closed-loop fix for known patterns. <em>We have: mock only.</em><br>
+    <strong>6. Continuous learning</strong> — improve from every resolved incident. <em>We have: nothing.</em><br>
+    <strong>7. Audit + compliance</strong> — full trail of every automated action. <em>We have: nothing.</em>
+  </p>
+</div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- 9 MODULE DOMAINS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="pn" id="p-modules">
+
+<div class="cd">
+  <h3>The 9 Domains That Make a Complete AIOps Solution</h3>
+  <p>
+    Each domain is a coherent set of capabilities. Some are foundational (must build first),
+    some are differentiators (where AEGIS becomes uniquely valuable), and some are table-stakes
+    (needed for production but not exciting). The order matters.
+  </p>
+</div>
+
+<!-- M1 -->
+<div class="sl"><span style="color:var(--grn)">M1</span> Orchestration & Execution Engine <span class="ln"></span></div>
+<div class="cd" style="border-left:3px solid var(--grn)">
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+    <span class="b b-grn">FOUNDATIONAL</span>
+    <span class="b b-red">HIGHEST PRIORITY</span>
+  </div>
+  <h3>The "Hands" — Make the generated runbook actually DO things</h3>
+  <p><strong>Current state:</strong> Runbook is generated but steps don't execute. No approval gates. No branching.</p>
+  <div class="g2" style="margin-top:14px">
+    <div class="mod"><h4>DAG Executor</h4><p>Parse runbook YAML → build dependency graph → execute steps respecting order, parallel groups, and branch logic. Resume from checkpoint on failure.</p><div class="meta"><span class="b b-red">must-have</span><span class="b b-grn">~5 days</span></div></div>
+    <div class="mod"><h4>Typed Sub-Agents</h4><p>DiagnosticAgent (read-only), DecisionAgent (LLM reasoning), RemediationAgent (write, always gated). Permission boundaries enforced in code.</p><div class="meta"><span class="b b-red">must-have</span><span class="b b-grn">~3 days</span></div></div>
+    <div class="mod"><h4>Human Approval Gate</h4><p>Pause execution at remediation steps. Show full diagnosis context. Approve/reject/modify. Timeout → auto-escalate. Web + Slack.</p><div class="meta"><span class="b b-red">must-have</span><span class="b b-grn">~3 days</span></div></div>
+    <div class="mod"><h4>Verification Loop</h4><p>After remediation: wait, re-check metrics, confirm recovery. If not recovered → rollback or escalate. Closed-loop automation.</p><div class="meta"><span class="b b-red">must-have</span><span class="b b-grn">~2 days</span></div></div>
+  </div>
+</div>
+
+<!-- M2 -->
+<div class="sl"><span style="color:var(--blu)">M2</span> Alert Correlation & Noise Reduction <span class="ln"></span></div>
+<div class="cd" style="border-left:3px solid var(--blu)">
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+    <span class="b b-blu">DIFFERENTIATOR</span>
+  </div>
+  <h3>Go from single-trigger to continuous alert processing</h3>
+  <p><strong>Current state:</strong> One incident = one manual trigger. No awareness of related alerts.</p>
+  <div class="g2" style="margin-top:14px">
+    <div class="mod"><h4>Alert Ingestion Pipeline</h4><p>Webhook receivers for Dynatrace, PagerDuty, Splunk alerts. Normalize all alerts into a common event schema with timestamp, source, severity, affected entity, and raw payload.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~3 days</span></div></div>
+    <div class="mod"><h4>Time-Window Correlation</h4><p>Group alerts that fire within a configurable window (e.g., 5 min) for the same service or related services. Reduce N alerts → 1 incident. Start with rule-based, graduate to ML.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~4 days</span></div></div>
+    <div class="mod"><h4>Deduplication Engine</h4><p>Identical alerts within a window collapse to a single event with count. Fingerprint-based: hash(source + entity + error_signature) → dedupe key.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~2 days</span></div></div>
+    <div class="mod"><h4>LLM-Powered Grouping</h4><p>For alerts that aren't identical but semantically related: use embeddings to cluster. "DB connection timeout" + "API 504 gateway timeout" → same incident.</p><div class="meta"><span class="b b-pur">advanced</span><span class="b b-grn">~4 days</span></div></div>
+  </div>
+</div>
+
+<!-- M3 -->
+<div class="sl"><span style="color:var(--pur)">M3</span> Service Topology & Blast Radius <span class="ln"></span></div>
+<div class="cd" style="border-left:3px solid var(--pur)">
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+    <span class="b b-pur">DIFFERENTIATOR</span>
+  </div>
+  <h3>Understand what depends on what — and who gets hurt</h3>
+  <p><strong>Current state:</strong> No dependency awareness. Can't trace upstream/downstream impact.</p>
+  <div class="g2" style="margin-top:14px">
+    <div class="mod"><h4>Service Dependency Graph</h4><p>Build a graph of service dependencies from Dynatrace topology, Confluence architecture docs, and manual config. Store in a queryable format (NetworkX or Neo4j-lite).</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~4 days</span></div></div>
+    <div class="mod"><h4>Blast Radius Calculator</h4><p>Given a failing service, walk the dependency graph to identify all downstream consumers. Score severity by number and criticality of affected consumers.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~2 days</span></div></div>
+    <div class="mod"><h4>Topology-Aware Diagnosis</h4><p>Feed dependency context into Strategist. "CDS gateway depends on Pithos. Pithos is also alerting → investigate Pithos first." Changes diagnosis strategy.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~2 days</span></div></div>
+    <div class="mod"><h4>Auto-Discovery via OTel</h4><p>As OTel maturity improves, auto-build topology from trace data. Service A calls Service B → edge in the graph. No manual config needed.</p><div class="meta"><span class="b b-pur">advanced</span><span class="b b-grn">~5 days</span></div></div>
+  </div>
+</div>
+
+<!-- M4 -->
+<div class="sl"><span style="color:var(--org)">M4</span> Knowledge Base & Institutional Memory <span class="ln"></span></div>
+<div class="cd" style="border-left:3px solid var(--org)">
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+    <span class="b b-org">DIFFERENTIATOR</span>
+    <span class="b b-pnk">MOAT</span>
+  </div>
+  <h3>Learn from every incident — the system gets smarter over time</h3>
+  <p><strong>Current state:</strong> Every incident starts from scratch. No memory of past resolutions.</p>
+  <div class="g2" style="margin-top:14px">
+    <div class="mod"><h4>Incident Vector Store</h4><p>Every resolved run (incident context + diagnosis + runbook + outcome) is embedded and stored in a vector DB (pgvector or ChromaDB). Enables semantic search: "show me incidents similar to this one."</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~4 days</span></div></div>
+    <div class="mod"><h4>RAG-Powered Strategist</h4><p>Before generating a new runbook, retrieve the 3-5 most similar past incidents. Feed their runbooks and outcomes into the Strategist context. "Last time this happened, rollback worked. The time before, it was an upstream issue."</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~3 days</span></div></div>
+    <div class="mod"><h4>Runbook Effectiveness Scoring</h4><p>After each run: did the runbook resolve the issue? How long did it take? Was the root cause correct? Score and store. Over time, the Strategist learns which patterns work and which don't.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~3 days</span></div></div>
+    <div class="mod"><h4>Confluence Knowledge Indexer</h4><p>Index existing Confluence runbooks, architecture docs, and postmortems into the vector store. The Strategist can cite specific Confluence pages in its reasoning.</p><div class="meta"><span class="b b-pur">advanced</span><span class="b b-grn">~3 days</span></div></div>
+  </div>
+</div>
+
+<!-- M5 -->
+<div class="sl"><span style="color:var(--cyn)">M5</span> Change Intelligence <span class="ln"></span></div>
+<div class="cd" style="border-left:3px solid var(--cyn)">
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+    <span class="b b-cyn">HIGH IMPACT</span>
+  </div>
+  <h3>Link deployments and config changes to emerging incidents</h3>
+  <p><strong>Current state:</strong> Jira data fetched but not correlated to incident timing automatically.</p>
+  <div class="g2" style="margin-top:14px">
+    <div class="mod"><h4>Change Event Tracker</h4><p>Continuously ingest deployment events, config pushes, feature flag toggles, and infra changes from Jira, CI/CD, and ServiceNow. Maintain a timeline.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~3 days</span></div></div>
+    <div class="mod"><h4>Change-Incident Correlator</h4><p>"Incident started at 14:18. Deployment build-4891 pushed at 14:15. Correlation: 0.92." Auto-inject into Strategist context when temporal proximity is high.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~3 days</span></div></div>
+    <div class="mod"><h4>Deployment Risk Scorer</h4><p>Before deployment: score risk based on change size, service criticality, time of day, historical failure rate of similar changes. "This deploy is high-risk: large diff + Friday afternoon + critical service."</p><div class="meta"><span class="b b-pur">advanced</span><span class="b b-grn">~4 days</span></div></div>
+  </div>
+</div>
+
+<!-- M6 -->
+<div class="sl"><span style="color:var(--ylw)">M6</span> Proactive Detection & Anomaly Intelligence <span class="ln"></span></div>
+<div class="cd" style="border-left:3px solid var(--ylw)">
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+    <span class="b b-ylw">ADVANCED</span>
+  </div>
+  <h3>Detect problems before they become incidents</h3>
+  <p><strong>Current state:</strong> Purely reactive. Only runs on manual trigger or alert webhook.</p>
+  <div class="g2" style="margin-top:14px">
+    <div class="mod"><h4>Scheduled Health Scans</h4><p>Cron-based: every 15 min, pull key metrics from Dynatrace + Splunk for all 12 services. Compare against baselines. If anomalous → auto-trigger AEGIS investigation (not remediation).</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~4 days</span></div></div>
+    <div class="mod"><h4>Exception Pattern Monitor</h4><p>Daily scan of Splunk error logs. Categorize as known vs. novel via Drain3 log template extraction. Surface new exception patterns before they escalate.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~5 days</span></div></div>
+    <div class="mod"><h4>SLO Burn Rate Alerting</h4><p>Continuous monitoring of error budget burn rates. Multi-window: 1h, 6h, 24h. Trigger AEGIS at Warning level, not just Critical — catch problems earlier.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~3 days</span></div></div>
+    <div class="mod"><h4>Predictive Anomaly Detection</h4><p>ML models (LSTM or Prophet) on key metrics to predict threshold breaches 1-4 hours ahead. "Error rate will breach SLO in ~2 hours at current trend."</p><div class="meta"><span class="b b-pur">advanced</span><span class="b b-grn">~8 days</span></div></div>
+  </div>
+</div>
+
+<!-- M7 -->
+<div class="sl"><span style="color:var(--pnk)">M7</span> Operations Dashboard & Workflow UX <span class="ln"></span></div>
+<div class="cd" style="border-left:3px solid var(--pnk)">
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+    <span class="b b-pnk">ADOPTION</span>
+  </div>
+  <h3>The UI that makes the team USE this every day</h3>
+  <p><strong>Current state:</strong> Basic single-page trigger + result view. No history, no search, no team workflow.</p>
+  <div class="g2" style="margin-top:14px">
+    <div class="mod"><h4>Real-Time Execution Dashboard</h4><p>React app. Live run trace with step-by-step execution, approval queue, status indicators. WebSocket-driven. The war-room view.</p><div class="meta"><span class="b b-red">must-have</span><span class="b b-grn">~5 days</span></div></div>
+    <div class="mod"><h4>Run History & Search</h4><p>Paginated history of all runs. Filter by app, env, status, time range, root cause category. Full audit trail per run.</p><div class="meta"><span class="b b-red">must-have</span><span class="b b-grn">~3 days</span></div></div>
+    <div class="mod"><h4>Runbook Diff & Version View</h4><p>Compare generated runbooks across runs for the same service. See how AEGIS's plans evolve as it learns. Monaco editor with YAML syntax highlighting.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~2 days</span></div></div>
+    <div class="mod"><h4>Slack/Teams Integration</h4><p>Post diagnosis summaries to incident channels. Approve remediation from Slack. Get @mentioned when approval is needed.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~4 days</span></div></div>
+    <div class="mod"><h4>MTTR & Cost Analytics</h4><p>Track per-incident: time to diagnose, time to plan, time to resolve. LLM cost per run. Show trends over time. This is your ROI dashboard for leadership.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~3 days</span></div></div>
+  </div>
+</div>
+
+<!-- M8 -->
+<div class="sl"><span style="color:var(--red)">M8</span> Safety, Audit & Governance <span class="ln"></span></div>
+<div class="cd" style="border-left:3px solid var(--red)">
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+    <span class="b b-red">TABLE STAKES</span>
+    <span class="b b-ylw">JPMC REQUIRED</span>
+  </div>
+  <h3>What makes this deployable at a bank</h3>
+  <p><strong>Current state:</strong> No audit trail. No RBAC. No compliance artifacts.</p>
+  <div class="g2" style="margin-top:14px">
+    <div class="mod"><h4>Structured Audit Logger</h4><p>JSON log for every: trigger, MCP call, LLM call (with tokens + cost), approval decision (who/when/what), remediation execution, state transition. Immutable. Queryable.</p><div class="meta"><span class="b b-red">must-have</span><span class="b b-grn">~3 days</span></div></div>
+    <div class="mod"><h4>RBAC (Role-Based Approval)</h4><p>Junior SRE: approve restarts. Senior SRE: approve rollbacks. Manager: approve scaling changes. Role definitions configurable per team.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~4 days</span></div></div>
+    <div class="mod"><h4>Confidence-Based Auto-Approve</h4><p>If same runbook pattern approved 20+ times with 100% success → offer auto-approve with countdown. Builds trust incrementally. Configurable per action type.</p><div class="meta"><span class="b b-pur">advanced</span><span class="b b-grn">~3 days</span></div></div>
+    <div class="mod"><h4>Demo Mode / Dry Run</h4><p>Run full pipeline but mock all write operations. For testing, demos, and shadow-mode pilots alongside manual SRE response.</p><div class="meta"><span class="b b-red">must-have</span><span class="b b-grn">~1 day</span></div></div>
+  </div>
+</div>
+
+<!-- M9 -->
+<div class="sl"><span style="color:var(--td)">M9</span> Infrastructure & Reliability <span class="ln"></span></div>
+<div class="cd" style="border-left:3px solid var(--td)">
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+    <span class="b" style="background:var(--s3);color:var(--td);border:1px solid var(--bdr)">PLUMBING</span>
+  </div>
+  <h3>Make the system itself reliable</h3>
+  <p><strong>Current state:</strong> If it crashes, restart. No persistence. No retry. No scaling.</p>
+  <div class="g2" style="margin-top:14px">
+    <div class="mod"><h4>State Persistence + Crash Recovery</h4><p>SQLite → PostgreSQL. Checkpoint after every step. Resume interrupted runs from last completed step.</p><div class="meta"><span class="b b-red">must-have</span><span class="b b-grn">~3 days</span></div></div>
+    <div class="mod"><h4>Error Handling & Retry</h4><p>Per-step retry with exponential backoff. MCP timeout → skip + log + continue. LLM failure → Opus fallback. Graceful degradation everywhere.</p><div class="meta"><span class="b b-red">must-have</span><span class="b b-grn">~3 days</span></div></div>
+    <div class="mod"><h4>Context Accumulator Hardening</h4><p>3-tier summarization (raw → extractive → abstractive). Token budget enforcement. Prevent 50KB Splunk responses from blowing the context window.</p><div class="meta"><span class="b b-red">must-have</span><span class="b b-grn">~2 days</span></div></div>
+    <div class="mod"><h4>Docker / GKP Deployment</h4><p>Containerize for Gaia/CPSR deployment. Docker Compose for dev, Helm chart for GKP prod. Health endpoints for K8s probes.</p><div class="meta"><span class="b b-org">high-value</span><span class="b b-grn">~3 days</span></div></div>
+  </div>
+</div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- PHASED ROADMAP -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="pn" id="p-roadmap">
+
+<div class="cd">
+  <h3>Phased Roadmap — 4 Horizons</h3>
+  <p>
+    Each horizon produces a <strong>deployable milestone</strong> that delivers measurable value.
+    Not everything needs to ship for AEGIS to be useful — the roadmap is sequenced so that
+    each phase stands alone as a usable product, and each subsequent phase compounds value.
+  </p>
+</div>
+
+<div class="tl">
+
+  <!-- H0 -->
+  <div class="tl-item done">
+    <div class="tl-head">
+      <span class="b b-done">H0 · DONE</span>
+      <h4>MVP — Proof of Concept</h4>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--grn)">Completed</span>
+    </div>
+    <div class="tl-body">
+      MCP connectivity to 4 tools. Parallel intelligence gathering. Strategist generates YAML runbook from real data. Basic UI to trigger and view results. <strong>Proved the core hypothesis: LLMs can generate actionable SRE runbooks from production data.</strong>
+    </div>
+    <div class="tl-modules">
+      <span class="tl-mod" style="border-color:var(--grn);color:var(--grn)">✓ MCP Layer</span>
+      <span class="tl-mod" style="border-color:var(--grn);color:var(--grn)">✓ Strategist (basic)</span>
+      <span class="tl-mod" style="border-color:var(--grn);color:var(--grn)">✓ Basic UI</span>
+    </div>
+  </div>
+
+  <!-- H1 -->
+  <div class="tl-item active">
+    <div class="tl-head">
+      <span class="b b-blu">H1 · EXECUTE</span>
+      <h4>Closed-Loop Execution — The system actually DOES things</h4>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--td)">~6 weeks</span>
+    </div>
+    <div class="tl-body">
+      <strong>The goal:</strong> Go from "generates a plan" to "executes the plan end-to-end with human approval gates."
+      This is the L1 → L2 maturity jump. After H1, AEGIS reduces MTTR by automating the execution loop, not just the diagnosis.
+      <br><br>
+      <strong>What ships:</strong>
+      <br>• DAG executor with typed sub-agents and permission boundaries
+      <br>• Web-based approval gate with full diagnosis context
+      <br>• Verification loop (post-remediation health check)
+      <br>• Change-incident correlation (link deploys to alerts)
+      <br>• Alert webhook ingestion (Dynatrace/PagerDuty → auto-trigger)
+      <br>• Run history with search + audit trail
+      <br>• MTTR tracking dashboard
+      <br>• State persistence + crash recovery
+      <br>• Error handling + retry logic
+      <br>• Demo mode (mock writes) + dry-run support
+    </div>
+    <div class="tl-modules">
+      <span class="tl-mod" style="border-color:var(--grn);color:var(--grn)">M1 Orchestration (full)</span>
+      <span class="tl-mod" style="border-color:var(--cyn);color:var(--cyn)">M5 Change Correlation (basic)</span>
+      <span class="tl-mod" style="border-color:var(--pnk);color:var(--pnk)">M7 Dashboard (core)</span>
+      <span class="tl-mod" style="border-color:var(--red);color:var(--red)">M8 Audit + Demo Mode</span>
+      <span class="tl-mod">M9 Persistence + Retry</span>
+    </div>
+    <div class="tl-metric">
+      <span>Target MTTR reduction: <strong>30-40%</strong></span>
+      <span>Runbook execution: <strong>fully automated</strong></span>
+      <span>Write safety: <strong>100% human-gated</strong></span>
+      <span>Pilot: <strong>1 service (shadow mode)</strong></span>
+    </div>
+  </div>
+
+  <!-- H2 -->
+  <div class="tl-item future">
+    <div class="tl-head">
+      <span class="b b-pur">H2 · LEARN</span>
+      <h4>Intelligence Layer — The system gets smarter over time</h4>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--td)">~6 weeks</span>
+    </div>
+    <div class="tl-body">
+      <strong>The goal:</strong> Every resolved incident makes AEGIS better at handling the next one.
+      This is what creates the competitive moat — the knowledge base is unique to your org.
+      <br><br>
+      <strong>What ships:</strong>
+      <br>• Incident vector store (embed + store every resolution)
+      <br>• RAG-powered Strategist (retrieve similar past incidents before planning)
+      <br>• Runbook effectiveness scoring (track which patterns work)
+      <br>• Alert deduplication + time-window correlation
+      <br>• Service dependency graph (manual + Dynatrace topology)
+      <br>• Blast radius calculator
+      <br>• Topology-aware diagnosis ("check upstream first")
+      <br>• Confluence knowledge indexer
+      <br>• Slack/Teams integration for approvals
+      <br>• RBAC (role-based approval tiers)
+    </div>
+    <div class="tl-modules">
+      <span class="tl-mod" style="border-color:var(--org);color:var(--org)">M4 Knowledge Base (full)</span>
+      <span class="tl-mod" style="border-color:var(--blu);color:var(--blu)">M2 Alert Correlation (basic)</span>
+      <span class="tl-mod" style="border-color:var(--pur);color:var(--pur)">M3 Topology (manual + DT)</span>
+      <span class="tl-mod" style="border-color:var(--pnk);color:var(--pnk)">M7 Slack + RBAC</span>
+    </div>
+    <div class="tl-metric">
+      <span>Diagnosis accuracy: <strong>improves with volume</strong></span>
+      <span>Alert noise reduction: <strong>70-80%</strong></span>
+      <span>Knowledge base: <strong>100+ indexed incidents</strong></span>
+      <span>Pilot: <strong>3-5 services</strong></span>
+    </div>
+  </div>
+
+  <!-- H3 -->
+  <div class="tl-item future">
+    <div class="tl-head">
+      <span class="b b-ylw">H3 · PREDICT</span>
+      <h4>Proactive Operations — Catch problems before they're incidents</h4>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--td)">~6 weeks</span>
+    </div>
+    <div class="tl-body">
+      <strong>The goal:</strong> Shift from reactive incident response to proactive health management.
+      AEGIS doesn't wait for alerts — it continuously monitors and surfaces emerging issues.
+      <br><br>
+      <strong>What ships:</strong>
+      <br>• Scheduled health scans (every 15 min across all services)
+      <br>• Exception pattern monitor (daily Splunk scan, known vs. novel)
+      <br>• SLO burn rate alerting (multi-window: 1h/6h/24h)
+      <br>• LLM-powered alert grouping (semantic similarity clustering)
+      <br>• Auto-discovery topology via OTel trace data
+      <br>• Confidence-based auto-approve for known patterns
+      <br>• Deployment risk scorer
+      <br>• Predictive anomaly detection (trend-based threshold breach forecasting)
+    </div>
+    <div class="tl-modules">
+      <span class="tl-mod" style="border-color:var(--ylw);color:var(--ylw)">M6 Proactive Detection (full)</span>
+      <span class="tl-mod" style="border-color:var(--blu);color:var(--blu)">M2 Correlation (advanced)</span>
+      <span class="tl-mod" style="border-color:var(--pur);color:var(--pur)">M3 Topology (auto-discovery)</span>
+      <span class="tl-mod" style="border-color:var(--cyn);color:var(--cyn)">M5 Deployment Risk</span>
+      <span class="tl-mod" style="border-color:var(--red);color:var(--red)">M8 Auto-Approve</span>
+    </div>
+    <div class="tl-metric">
+      <span>Incidents prevented: <strong>measurable</strong></span>
+      <span>Alert noise reduction: <strong>90%+</strong></span>
+      <span>Auto-resolved (known patterns): <strong>30-40%</strong></span>
+      <span>Coverage: <strong>all 12 services</strong></span>
+    </div>
+  </div>
+
+  <!-- H4 -->
+  <div class="tl-item future">
+    <div class="tl-head">
+      <span class="b b-org">H∞ · AUTONOMOUS</span>
+      <h4>Vision — Self-Healing Shared Services</h4>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--td)">Ongoing</span>
+    </div>
+    <div class="tl-body">
+      Known incidents resolve autonomously. Novel incidents get diagnosed and staged for human decision. SRE team shifts from "responders" to "reliability architects." The system's knowledge base becomes an institutional asset that survives team turnover.
+    </div>
+    <div class="tl-metric">
+      <span>Autonomous resolution rate: <strong>60%+ of known patterns</strong></span>
+      <span>On-call interruption reduction: <strong>50%+</strong></span>
+      <span>Knowledge captured: <strong>org-wide asset</strong></span>
+    </div>
+  </div>
+
+</div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- CAPABILITY MATRIX -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="pn" id="p-matrix">
+
+<div class="cd">
+  <h3>Capability Matrix — What Ships When</h3>
+  <p>At-a-glance view of which capabilities land in which horizon.</p>
+</div>
+
+<div class="cap-grid" style="margin-top:16px">
+  <div class="cap-cell cap-hdr">Capability</div>
+  <div class="cap-cell cap-hdr" style="color:var(--grn)">H0 MVP ✓</div>
+  <div class="cap-cell cap-hdr" style="color:var(--blu)">H1 Execute</div>
+  <div class="cap-cell cap-hdr" style="color:var(--pur)">H2 Learn</div>
+  <div class="cap-cell cap-hdr" style="color:var(--ylw)">H3 Predict</div>
+
+  <div class="cap-cell cap-row-hdr">MCP Connectivity</div>
+  <div class="cap-cell cap-yes">✓ Full</div><div class="cap-cell cap-yes">—</div><div class="cap-cell cap-yes">—</div><div class="cap-cell cap-yes">—</div>
+
+  <div class="cap-cell cap-row-hdr">Intelligence Gathering</div>
+  <div class="cap-cell cap-yes">✓ Parallel</div><div class="cap-cell cap-yes">+ Webhook trigger</div><div class="cap-cell cap-yes">+ Past incidents</div><div class="cap-cell cap-yes">+ Scheduled scans</div>
+
+  <div class="cap-cell cap-row-hdr">Runbook Generation</div>
+  <div class="cap-cell cap-yes">✓ Basic</div><div class="cap-cell cap-yes">+ Change corr.</div><div class="cap-cell cap-yes">+ RAG + topology</div><div class="cap-cell cap-yes">+ Predictive</div>
+
+  <div class="cap-cell cap-row-hdr">Step Execution</div>
+  <div class="cap-cell cap-no">✗ None</div><div class="cap-cell cap-yes">DAG + sub-agents</div><div class="cap-cell cap-yes">—</div><div class="cap-cell cap-yes">—</div>
+
+  <div class="cap-cell cap-row-hdr">Human Approval</div>
+  <div class="cap-cell cap-no">✗ None</div><div class="cap-cell cap-yes">Web UI gate</div><div class="cap-cell cap-yes">+ Slack + RBAC</div><div class="cap-cell cap-yes">+ Auto-approve</div>
+
+  <div class="cap-cell cap-row-hdr">Alert Correlation</div>
+  <div class="cap-cell cap-no">✗ None</div><div class="cap-cell cap-partial">Webhook ingest</div><div class="cap-cell cap-yes">Dedup + window</div><div class="cap-cell cap-yes">LLM grouping</div>
+
+  <div class="cap-cell cap-row-hdr">Topology Awareness</div>
+  <div class="cap-cell cap-no">✗ None</div><div class="cap-cell cap-no">—</div><div class="cap-cell cap-yes">Manual + DT</div><div class="cap-cell cap-yes">Auto via OTel</div>
+
+  <div class="cap-cell cap-row-hdr">Knowledge Base</div>
+  <div class="cap-cell cap-no">✗ None</div><div class="cap-cell cap-no">—</div><div class="cap-cell cap-yes">Vector store + RAG</div><div class="cap-cell cap-yes">—</div>
+
+  <div class="cap-cell cap-row-hdr">Change Intelligence</div>
+  <div class="cap-cell cap-no">✗ None</div><div class="cap-cell cap-yes">Time correlation</div><div class="cap-cell cap-yes">—</div><div class="cap-cell cap-yes">Deploy risk score</div>
+
+  <div class="cap-cell cap-row-hdr">Proactive Detection</div>
+  <div class="cap-cell cap-no">✗ None</div><div class="cap-cell cap-no">—</div><div class="cap-cell cap-no">—</div><div class="cap-cell cap-yes">Scans + predict</div>
+
+  <div class="cap-cell cap-row-hdr">Dashboard & UX</div>
+  <div class="cap-cell cap-partial">Basic trigger</div><div class="cap-cell cap-yes">Full dashboard</div><div class="cap-cell cap-yes">+ Slack + history</div><div class="cap-cell cap-yes">+ Analytics</div>
+
+  <div class="cap-cell cap-row-hdr">Audit & Compliance</div>
+  <div class="cap-cell cap-no">✗ None</div><div class="cap-cell cap-yes">Structured logs</div><div class="cap-cell cap-yes">+ RBAC</div><div class="cap-cell cap-yes">+ Auto-approve</div>
+
+  <div class="cap-cell cap-row-hdr">State Persistence</div>
+  <div class="cap-cell cap-no">✗ None</div><div class="cap-cell cap-yes">SQLite + recovery</div><div class="cap-cell cap-yes">Postgres</div><div class="cap-cell cap-yes">—</div>
+</div>
+
+<div class="cd" style="margin-top:24px">
+  <h3>The Strategic Insight</h3>
+  <p>
+    <strong>H1 (Execute)</strong> is where AEGIS goes from "interesting demo" to "tool my team uses daily."
+    It's the only horizon that's purely about making the existing capability <em>operational</em>.
+    <br><br>
+    <strong>H2 (Learn)</strong> is where AEGIS becomes a moat. The knowledge base is unique to your org —
+    no off-the-shelf tool has your incident history, your failure patterns, your topology.
+    Every incident makes the system smarter. This is the compounding flywheel.
+    <br><br>
+    <strong>H3 (Predict)</strong> is where AEGIS shifts the paradigm from reactive to proactive.
+    This is the "Level 3" on the SRE AI Maturity Model you're pitching to Kunal.
+    Most orgs never get here. If yours does, it's a competitive advantage in operational quality.
+  </p>
+</div>
+
+</section>
+
+</div>
+
+<script>
+document.getElementById('nav').addEventListener('click',e=>{
+  const b=e.target.closest('.nb');if(!b)return;
+  document.querySelectorAll('.nb').forEach(n=>n.classList.remove('on'));b.classList.add('on');
+  document.querySelectorAll('.pn').forEach(p=>p.classList.remove('vis'));
+  document.getElementById('p-'+b.dataset.t).classList.add('vis');
+});
+</script>
+</body>
+</html>
