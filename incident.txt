@@ -1,0 +1,43 @@
+You are a data analyst working with a ServiceNow incident export CSV.
+
+## Task
+Analyze the incident data and generate two separate, presentation-quality line graphs:
+1. **Monthly Ticket Volume** – total number of incidents per month (Jan, Feb, Mar)
+2. **Mean Time to Resolve (MTTR)** – average resolution time in hours per month (Jan, Feb, Mar)
+
+## Input
+The CSV file has the following ServiceNow standard columns (adjust column names if yours differ):
+- `number` – incident ID
+- `opened_at` – datetime the ticket was opened (format: YYYY-MM-DD HH:MM:SS)
+- `resolved_at` – datetime the ticket was resolved (format: YYYY-MM-DD HH:MM:SS)
+- `state` – ticket state (only include rows where state is "Resolved" or "Closed")
+- `priority` – P1/P2/P3/P4 (optional: use for color-coded breakdown if present)
+
+## Requirements
+
+### Data Processing
+- Parse `opened_at` to extract month; filter only Jan, Feb, Mar
+- Calculate resolution time per ticket: `resolved_at - opened_at` in hours
+- Drop rows where `resolved_at` is null or empty
+- Group by month and compute:
+  - Ticket count (volume)
+  - Mean resolution time in hours (MTTR)
+
+### Chart Specifications — use matplotlib
+- Use `figsize=(10, 5)` for each chart
+- Use a clean style: `plt.style.use('seaborn-v0_8-whitegrid')`
+- Line color: `#2563EB` (blue) with markers at each data point (`marker='o'`, `markersize=8`)
+- Add data labels on each point (value annotated above the marker)
+- X-axis: Month names (January, February, March)
+- Y-axis labels: "Number of Incidents" for volume chart, "Avg Resolution Time (hrs)" for MTTR chart
+- Title font size 14, bold
+- Add a subtle shaded area under the line using `fill_between` with alpha=0.1
+- Save each chart as a high-res PNG: `ticket_volume.png` and `mttr.png` (dpi=150)
+- Print a summary table to console showing Month | Volume | MTTR (hrs)
+
+### Chart Titles
+- Volume chart: "Monthly Incident Ticket Volume — Q1"
+- MTTR chart: "Mean Time to Resolve (MTTR) — Q1"
+
+## Output
+Generate a single self-contained Python script. Assume the CSV is in the same directory as the script and is named `incidents.csv`. The script should run wi
