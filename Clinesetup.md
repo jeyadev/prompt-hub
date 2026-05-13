@@ -108,3 +108,39 @@ The risk: **it becomes ritual without substance.** You run the six questions, th
 The defence: *you* answer at least one of the six questions yourself, in your own words, before reading the agent's assessment. Questions 2 (whose pain) and 4 (smallest version) are the ones you should always answer first — they're the ones where your skin in the game matters. The agent can map the architecture; only you know whether the user is real and the cheap version is acceptable.
 
 Test it on the next idea that hits your INBOX. If it's still useful at task 020, the protocol is real.
+
+
+Different beast, different shape. The enterprise workspace is for when you need to sign off with the CISO. This one is for when you want to *try things*. I'll build it as a separate workspace — `aegis-lab` — that you can use alongside or instead.
+
+The philosophy: minimum ceremony, fast iteration, with just enough structure to not lose what you tried.Different shape entirely. The whole thing is 13 files and reads in 20 minutes.
+
+**Total contents:**
+
+- `README.md` — three-paragraph orientation, the directory tree, quick start commands.
+- `VIBE-GUIDE.md` — the actual playbook. Three modes (`explore`, `build`, `polish`), the feature flow without ceremony, copy-paste prompts that work, four anti-patterns and how to spot them, the rules for when to shorten the leash vs. lengthen it.
+- `.roo/rules/01-project.md` — one page: what AEGIS is, what stack, what posture.
+- `.roo/rules/02-vibe-rules.md` — five rules. The entire leash. Don't commit secrets. Fix the demo before adding more. Prototype in scratch first. Append to memory when you learn. Max three concurrent features.
+- `.roomodes` — explore (scratch only), build (real code), polish (no new features).
+- `features/INBOX.md`, `in-progress.md`, `shipped.md`, `parked.md` — the flow.
+- `scratch/README.md`, `notes/README.md` — what goes where.
+
+**To use it:**
+
+```bash
+unzip aegis-lab.zip
+cd aegis-lab
+rsync -av --exclude='.git' ../your-aegis-demo/ ./
+code .
+```
+
+Read VIBE-GUIDE.md once. Then go.
+
+## One contrast worth naming
+
+The enterprise workspace asks the agent six stress-test questions before an idea becomes a task. This workspace asks zero. The difference isn't sloppiness — it's that **the cost of being wrong is different**. In enterprise mode, a wrong feature can hurt customers and trigger an audit. In lab mode, a wrong feature wastes an afternoon. Calibrate the protocol to the cost.
+
+The real trap: using lab-mode discipline on enterprise-mode work. That's how production incidents happen. Use the VIBE-GUIDE's "When this workspace stops being enough" checklist as your tripwire — when any of those signs fire, copy what's worth keeping into the enterprise workspace and switch over.
+
+## One stress-test on the workspace itself
+
+The `notes/` and `scratch/` directories are the most likely to rot. Both will accumulate cruft if you don't periodically clean them. The guide tells you to clean scratch every two weeks; consider putting it in your calendar, not just in the doc. Documentation that depends on you remembering to read it is the second-most-common failure mode of workspaces like this one. The first is the agent quietly architecting in the background while you focus on features. Watch for both.
