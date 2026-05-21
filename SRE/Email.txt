@@ -1,0 +1,9 @@
+We're seeing an elevated failure rate on the UpdateResource service. This is caused by an internal remediation service making consecutive calls to the CDS Find and Update service in bulk, resulting in a fraction of requests being dropped under load.
+
+There is no user impact — this is entirely contained to internal processing.
+
+Mitigation: We've increased the delay between requests from the remediation service to reduce the pressure on UpdateResource.
+
+Longer term, we're moving the remediation flow to a dedicated independent service to fully decouple it from the main service path.
+
+No action needed from the team at this time. Will update if anything changes.
