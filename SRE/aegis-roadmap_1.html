@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AEGIS — From Demo to Enterprise. A Production Brief.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,300;1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0d12;
+  --bg-2: #11141c;
+  --bg-3: #161a24;
+  --ink: #e8e2d4;
+  --ink-2: #b8b0a0;
+  --ink-3: #777163;
+  --rule: #2a2e3a;
+  --rule-2: #1c2029;
+  --copper: #c89a5b;
+  --copper-2: #e0b478;
+  --amber: #f4c47a;
+  --crimson: #c97064;
+  --moss: #8aa073;
+  --sky: #6f95b8;
+  --serif: "Newsreader", Georgia, serif;
+  --display: "Fraunces", "Newsreader", Georgia, serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.65;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background-image:
+    radial-gradient(1200px 600px at 80% -10%, rgba(200,154,91,0.08), transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, rgba(111,149,184,0.05), transparent 60%);
+}
+
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 80px 56px 120px;
+}
+
+/* ======== COVER ======== */
+.cover {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 64px;
+  margin-bottom: 64px;
+  position: relative;
+}
+.cover .meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 56px;
+}
+.cover .meta .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--copper);
+  display: inline-block; vertical-align: middle;
+  margin-right: 8px;
+  box-shadow: 0 0 12px var(--copper);
+}
+.cover h1 {
+  font-family: var(--display);
+  font-weight: 300;
+  font-size: clamp(48px, 7vw, 92px);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  margin: 0 0 24px;
+  color: var(--ink);
+  font-variation-settings: "opsz" 144;
+}
+.cover h1 em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--copper-2);
+}
+.cover .lede {
+  font-family: var(--display);
+  font-weight: 300;
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 720px;
+  margin: 0 0 48px;
+}
+.cover .byline {
+  display: flex;
+  gap: 48px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.cover .byline span strong {
+  display: block;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+  margin-top: 4px;
+}
+
+/* ======== SECTION ======== */
+section { margin: 88px 0; }
+.kicker {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--copper);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.kicker::before {
+  content: "";
+  width: 28px; height: 1px;
+  background: var(--copper);
+}
+h2 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(32px, 4.2vw, 48px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0 0 32px;
+  color: var(--ink);
+}
+h2 em { font-style: italic; color: var(--copper-2); font-weight: 300; }
+
+h3 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin: 32px 0 12px;
+  color: var(--ink);
+}
+h4 {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 24px 0 8px;
+}
+p { margin: 0 0 16px; }
+p.lede {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  font-family: var(--display);
+  font-weight: 300;
+  max-width: 720px;
+}
+
+a { color: var(--copper-2); text-decoration: none; border-bottom: 1px solid rgba(200,154,91,0.4); }
+strong { color: var(--ink); font-weight: 600; }
+em { color: var(--ink-2); }
+
+code, .mono { font-family: var(--mono); font-size: 0.86em; color: var(--copper-2); background: var(--bg-3); padding: 1px 6px; border-radius: 3px; border: 1px solid var(--rule-2); }
+
+/* ======== FRAME — current state ======== */
+.frame {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin: 32px 0;
+}
+.frame .cell {
+  background: var(--bg-2);
+  padding: 28px 24px;
+}
+.frame .cell .label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 12px;
+}
+.frame .cell .body {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.frame .cell.now .label { color: var(--moss); }
+.frame .cell.gap .label { color: var(--crimson); }
+.frame .cell.north .label { color: var(--copper); }
+
+/* ======== PHASES ======== */
+.phase {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 56px;
+  padding: 48px 0;
+  border-top: 1px solid var(--rule);
+  position: relative;
+}
+.phase:last-child { border-bottom: 1px solid var(--rule); }
+
+.phase .num {
+  font-family: var(--display);
+  font-weight: 200;
+  font-size: 96px;
+  line-height: 0.9;
+  color: var(--copper);
+  font-variation-settings: "opsz" 144;
+  letter-spacing: -0.04em;
+}
+.phase .num small {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 8px;
+  font-weight: 500;
+}
+.phase .title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin: 0 0 8px;
+}
+.phase .subtitle {
+  font-family: var(--display);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 17px;
+  color: var(--ink-2);
+  margin: 0 0 28px;
+}
+.phase .pillars {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px 36px;
+  margin-top: 24px;
+}
+.phase .pillar h4 {
+  margin-top: 0;
+  color: var(--copper-2);
+}
+.phase .pillar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.phase .pillar ul li {
+  padding-left: 18px;
+  position: relative;
+  margin-bottom: 6px;
+}
+.phase .pillar ul li::before {
+  content: "›";
+  position: absolute;
+  left: 0;
+  color: var(--copper);
+  font-weight: 600;
+}
+.phase .pillar ul li strong { color: var(--ink); }
+
+.phase .deliverables {
+  margin-top: 28px;
+  padding: 18px 22px;
+  background: var(--bg-2);
+  border-left: 2px solid var(--copper);
+  font-size: 14.5px;
+  color: var(--ink-2);
+}
+.phase .deliverables .label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--copper);
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* ======== CODE CONTEXT — vertical stack ======== */
+.codex {
+  border: 1px solid var(--rule);
+  background: linear-gradient(180deg, var(--bg-2), var(--bg));
+  padding: 8px;
+  margin: 32px 0;
+}
+.layer {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr;
+  gap: 0;
+  padding: 24px 28px;
+  border-bottom: 1px dashed var(--rule);
+  align-items: start;
+}
+.layer:last-child { border-bottom: none; }
+.layer .l-num {
+  font-family: var(--display);
+  font-weight: 300;
+  font-size: 36px;
+  color: var(--copper);
+  line-height: 1;
+  font-variation-settings: "opsz" 144;
+}
+.layer .l-name {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 19px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.layer .l-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.layer .l-body {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.layer .l-body code { font-size: 0.85em; }
+
+/* ======== EXAMPLE FLOW ======== */
+.flow {
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  padding: 32px 36px;
+  margin: 32px 0;
+  position: relative;
+}
+.flow::before {
+  content: "WORKED EXAMPLE";
+  position: absolute;
+  top: -10px; left: 24px;
+  background: var(--bg);
+  padding: 0 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--copper);
+}
+.flow .step {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--rule-2);
+}
+.flow .step:last-child { border-bottom: none; }
+.flow .step .marker {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--copper);
+  padding-top: 2px;
+}
+.flow .step .text {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.flow .step .text em { color: var(--ink-2); }
+.flow .step.outcome .marker { color: var(--moss); }
+.flow .step.outcome .text { color: var(--moss); font-style: italic; }
+
+/* ======== TWO-COL ======== */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  margin: 32px 0;
+}
+.two-col .col h3 { margin-top: 0; }
+
+/* ======== METRICS ======== */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin: 32px 0;
+}
+.metric {
+  background: var(--bg-2);
+  padding: 24px;
+}
+.metric .num {
+  font-family: var(--display);
+  font-weight: 300;
+  font-size: 44px;
+  line-height: 1;
+  color: var(--copper);
+  font-variation-settings: "opsz" 144;
+  letter-spacing: -0.02em;
+}
+.metric .label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 10px;
+  line-height: 1.4;
+}
+
+/* ======== RISKS ======== */
+.risks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 24px 0;
+}
+.risk {
+  border-left: 2px solid var(--crimson);
+  padding: 4px 0 4px 20px;
+}
+.risk .head {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.risk .body {
+  font-size: 14px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+.risk .body strong { color: var(--copper-2); }
+
+/* ======== CLOSING ======== */
+.closing {
+  margin-top: 96px;
+  padding-top: 48px;
+  border-top: 1px solid var(--rule);
+}
+.closing .pull {
+  font-family: var(--display);
+  font-weight: 300;
+  font-style: italic;
+  font-size: 26px;
+  line-height: 1.4;
+  color: var(--ink);
+  max-width: 720px;
+  margin: 0 0 24px;
+}
+.closing .pull::before {
+  content: "“";
+  font-size: 80px;
+  color: var(--copper);
+  line-height: 0;
+  vertical-align: -32px;
+  margin-right: 4px;
+}
+.signoff {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 56px;
+  text-align: right;
+}
+
+@media (max-width: 820px) {
+  .wrap { padding: 56px 24px 80px; }
+  .frame { grid-template-columns: 1fr; }
+  .phase { grid-template-columns: 1fr; gap: 24px; }
+  .phase .pillars { grid-template-columns: 1fr; gap: 20px; }
+  .layer { grid-template-columns: 40px 1fr; }
+  .layer .l-body { grid-column: 1 / -1; padding-top: 12px; }
+  .two-col { grid-template-columns: 1fr; gap: 28px; }
+  .metrics { grid-template-columns: 1fr 1fr; }
+  .risks { grid-template-columns: 1fr; }
+  .cover .byline { flex-direction: column; gap: 16px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ============== COVER ============== -->
+<header class="cover">
+  <div class="meta">
+    <span><span class="dot"></span>AEGIS · Internal Strategy Brief</span>
+    <span>v1.0 · Post-Demo · forever_an_arjuna</span>
+  </div>
+  <h1>From a working demo to <em>infrastructure the bank can lean on.</em></h1>
+  <p class="lede">A production roadmap for AEGIS — closing the gap between an agentic SRE prototype and an enterprise-grade incident automation platform, with a code-aware runbook engine at its core and a forward-deployed operating model around it.</p>
+  <div class="byline">
+    <span>Author<strong>Jey Ganesh · VP, SRE</strong></span>
+    <span>Subject<strong>AEGIS Production Readiness</strong></span>
+    <span>Audience<strong>Engineering & SRE Leadership</strong></span>
+    <span>Posture<strong>Build to operate, not to demo</strong></span>
+  </div>
+</header>
+
+<!-- ============== FRAME ============== -->
+<section>
+  <div class="kicker">01 · The Frame</div>
+  <h2>What we shipped, what's missing, <em>where it has to land.</em></h2>
+  <p class="lede">The demo proved the architecture works: Strategist diagnoses, the Dynamic Runbook composes a plan, Sub-Agents execute through MCP, the Verify Loop confirms recovery. That's the 20% that earns the right to build the other 80%. The 80% is everything that turns a working pattern into something a Tier-1 bank can route real incidents through.</p>
+
+  <div class="frame">
+    <div class="cell now">
+      <div class="label">Where we are</div>
+      <div class="body">A working MVP. Strategist · Dynamic Runbook · Sub-Agents on MCP (Splunk, Dynatrace, AIOps, SLO Tracker, Remediation, Confluence, Jira). React builder UI, FastAPI service, SQLite state, SSE streaming. Three fix modes: <code>suggest_only</code> · <code>approval_required</code> · <code>auto</code>.</div>
+    </div>
+    <div class="cell gap">
+      <div class="label">What's missing</div>
+      <div class="body">Identity, RBAC, secrets, audit-grade logging, HA, model governance, eval harness, code awareness, a real onboarding flow, observability of AEGIS itself, and an operating model for scaling to 50+ apps without a hero on every incident.</div>
+    </div>
+    <div class="cell north">
+      <div class="label">North star</div>
+      <div class="body">By Q4: ten Tier-1 services running through AEGIS in <code>approval_required</code> mode, MTTR cut by 40% on onboarded apps, code-aware runbooks suggesting cause-and-fix not just "restart the pod", and an onboarding flow an app team can self-serve in a week.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== ROADMAP ============== -->
+<section>
+  <div class="kicker">02 · The Roadmap</div>
+  <h2>Four phases. Twelve months. <em>Each phase earns the next.</em></h2>
+  <p class="lede">The sequence matters. Hardening before code context — because we don't want to give a hallucinating agent more reach. Code context before scale — because onboarding the tenth app is only safe if the platform learned how to be careful by app three.</p>
+
+  <!-- ===== PHASE 1 ===== -->
+  <div class="phase">
+    <div class="num">01<small>Months 1–3</small></div>
+    <div class="content">
+      <h3 class="title">Hardening the floor</h3>
+      <p class="subtitle">Make AEGIS something the CISO and the Auditor can sign off on before it touches another production system.</p>
+
+      <div class="pillars">
+        <div class="pillar">
+          <h4>Identity & Access</h4>
+          <ul>
+            <li><strong>SSO</strong> via JPMC IDAnywhere; SID for human ops, FID for service identity</li>
+            <li><strong>RBAC</strong> at agent, runbook, and action granularity — separate roles for builder, approver, auditor</li>
+            <li><strong>Service principals</strong> per MCP integration with least-privilege scopes</li>
+            <li><strong>Just-in-time elevation</strong> for <code>auto</code>-mode actions</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Secrets & Data</h4>
+          <ul>
+            <li>Migrate from <code>.env</code> to <strong>Vault</strong> with per-app credential rotation</li>
+            <li>PII redaction at the log ingestion edge — no raw customer data in agent context</li>
+            <li><strong>PostgreSQL</strong> replacing SQLite; row-level security per app</li>
+            <li>Data classification tags carried through every agent decision</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Reliability of the platform itself</h4>
+          <ul>
+            <li><strong>HA deployment</strong> across two AZs; active-active orchestrator</li>
+            <li>Circuit breakers, retries with jitter, dead-letter queue for failed actions</li>
+            <li><strong>Idempotency keys</strong> on every Sub-Agent action — no double-restarts</li>
+            <li>OpenTelemetry on AEGIS itself: AEGIS observes AEGIS</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Model governance</h4>
+          <ul>
+            <li><strong>Prompt-injection defence</strong> — input partitioning, output schema enforcement via tool use</li>
+            <li>Per-tenant <strong>token budgets</strong>; cost telemetry surfaced in the Ops Console</li>
+            <li>Model fallback chain (Sonnet → Haiku) with quality gates</li>
+            <li><strong>Eval harness v1</strong> — golden incident set + LLM-as-judge regression on every release</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Audit & compliance</h4>
+          <ul>
+            <li>Immutable audit log of every agent decision, tool call, and fix action</li>
+            <li>SOX-grade approval chain for <code>auto</code>-mode promotions</li>
+            <li>7-year retention, exportable to JPMC's e-discovery platform</li>
+            <li>Agent decisions reproducible from log + frozen prompts</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Operational discipline</h4>
+          <ul>
+            <li>Blue/green deploys with shadow-traffic warm-up</li>
+            <li>Per-environment kill-switch reachable in under 30 seconds</li>
+            <li>Rollback story for every Sub-Agent action — written before the action ships</li>
+            <li>SRE on-call rotation for AEGIS itself</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="deliverables">
+        <span class="label">Phase 1 exit criteria</span>
+        AEGIS passes the JPMC TPRM-grade self-assessment. CISO sign-off on identity model. Eval harness running weekly with documented baseline. Zero reliance on developer laptops for any control-plane action.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PHASE 2 ===== -->
+  <div class="phase">
+    <div class="num">02<small>Months 3–5</small></div>
+    <div class="content">
+      <h3 class="title">Code context — the missing layer</h3>
+      <p class="subtitle">Today AEGIS knows the symptoms; tomorrow it knows the source. This is the phase that turns "restart the pod" into "revert PR #234, here's why."</p>
+
+      <div class="pillars">
+        <div class="pillar">
+          <h4>Repository onboarding</h4>
+          <ul>
+            <li>Connectors for Bitbucket Enterprise, GitHub Enterprise, GitLab</li>
+            <li>GitHub-App style auth with repo-scoped, time-bounded tokens</li>
+            <li>Initial pull at onboarding; webhook-driven incremental re-index</li>
+            <li><strong>CODEOWNERS</strong> + AD resolution → who to page, who can approve</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Code indexing</h4>
+          <ul>
+            <li><strong>Tree-sitter</strong> parsers for Java, Python, Kotlin, Go, JS/TS</li>
+            <li>Symbol graph: classes, functions, call graph, import graph</li>
+            <li>Service topology from Spring/Quarkus annotations, K8s manifests, Terraform</li>
+            <li>Per-service map: repo · deployment unit · runtime · owners · runbook overrides</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Embeddings & retrieval</h4>
+          <ul>
+            <li>Code embeddings via Voyage <code>code-3</code> (or equivalent) — chunked at function boundary, not line count</li>
+            <li><strong>pgvector</strong> on the same Postgres we just stood up</li>
+            <li>Hybrid retrieval: BM25 + dense + symbol-exact match → reranked</li>
+            <li>Per-repo cache for hot files; cold storage for everything else</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Incident → code linking</h4>
+          <ul>
+            <li>Stack-frame parser → resolve to <code>repo / file / function / line</code></li>
+            <li>Recent-commit window: what changed in the last 1h / 24h / 7d on the affected paths</li>
+            <li>Past-incident vector match: "we've seen this fingerprint before" with the resolution</li>
+            <li>Owner ping list assembled from CODEOWNERS + git-blame heuristic</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Code-aware runbook synthesis</h4>
+          <ul>
+            <li>Strategist context now carries: alert · observability · code · diff · history</li>
+            <li>Output runbooks include candidate cause, the offending change, the rollback step, the owner page</li>
+            <li><strong>Confidence scoring</strong> per hypothesis — runbook gates auto-execution under threshold</li>
+            <li>Falls back gracefully to symptom-only runbooks when code context is sparse</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Learning loop</h4>
+          <ul>
+            <li>After every resolution: which hypothesis was right, which fix worked</li>
+            <li>Append to <code>incident_history</code> with embedding — instant memory for next time</li>
+            <li>Per-repo "lessons learned" prompt cache, refreshed weekly</li>
+            <li>Eval harness extended: <em>did the suggested cause match the actual cause?</em></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="deliverables">
+        <span class="label">Phase 2 exit criteria</span>
+        Three pilot apps fully indexed. On the golden incident set, code-aware runbooks beat symptom-only runbooks on cause-precision by ≥40%. Hallucination rate on cause attribution under 5% (judged by app owners). Re-index latency under 5 min per push.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PHASE 3 ===== -->
+  <div class="phase">
+    <div class="num">03<small>Months 5–7</small></div>
+    <div class="content">
+      <h3 class="title">Self-serve onboarding</h3>
+      <p class="subtitle">Stop being the bottleneck. Make app teams onboard themselves through a flow that earns trust before it earns autonomy.</p>
+
+      <div class="pillars">
+        <div class="pillar">
+          <h4>Application profile schema</h4>
+          <ul>
+            <li>Single declarative spec: services, repos, owners, SLOs, criticality tier, runtime, observability bindings</li>
+            <li>Versioned in the app's own repo as <code>aegis.yaml</code> — GitOps native</li>
+            <li>Validates on PR; deploys through a controlled release channel</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Onboarding wizard</h4>
+          <ul>
+            <li>Step-through UI: identity → repos → observability → runbook overrides → on-call</li>
+            <li>Auto-detects existing Splunk indices and Dynatrace entities by name match + suggestion</li>
+            <li>Pre-flight check: connectivity, permissions, sample query against each MCP</li>
+            <li>Generates first-pass runbook library from the team's existing Confluence pages</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Trust ladder</h4>
+          <ul>
+            <li><strong>Shadow</strong> (2 weeks): observes only, generates runbooks, executes nothing</li>
+            <li><strong>Suggest-only</strong>: proposals on the bridge, humans drive — graduation gated by ≥85% suggestion-accept rate</li>
+            <li><strong>Approval-required</strong>: AEGIS proposes and stages; humans approve, AEGIS executes</li>
+            <li><strong>Auto</strong>: scoped to safe actions on Tier-3 services with one-click rollback always present</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Per-app evaluation</h4>
+          <ul>
+            <li>Each onboarded app has its own golden set of past incidents</li>
+            <li>Weekly regression: did this week's runbooks beat last week's on the same incidents?</li>
+            <li>Owner-facing scorecard — coverage, accuracy, time saved, false-positive rate</li>
+            <li>App teams can promote/demote AEGIS modes from their own console</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="deliverables">
+        <span class="label">Phase 3 exit criteria</span>
+        Five apps onboarded without my team writing a line of integration code. Median time from "wizard start" to "first generated runbook" under 60 minutes. At least two apps graduated past Shadow into Suggest-only on their own evidence.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PHASE 4 ===== -->
+  <div class="phase">
+    <div class="num">04<small>Months 7–12</small></div>
+    <div class="content">
+      <h3 class="title">Scale, governance, and the operating model</h3>
+      <p class="subtitle">Move from "ten apps where it works" to "a platform the bank treats as infrastructure, with the rituals, reporting, and economics that implies."</p>
+
+      <div class="pillars">
+        <div class="pillar">
+          <h4>Cross-app intelligence</h4>
+          <ul>
+            <li>Anonymised pattern library across onboarded apps</li>
+            <li>"Apps with shared dependencies" graph — when Postgres misbehaves, who's affected?</li>
+            <li>Federated learning: a bad fingerprint detected in one app warns the rest</li>
+            <li>Reusable agents and runbook templates published to an internal marketplace</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Enterprise governance</h4>
+          <ul>
+            <li>Quarterly model review: drift, accuracy, cost, incident counter-factual</li>
+            <li>Change-advisory integration — every <code>auto</code>-mode promotion logged as a CAB record</li>
+            <li>Independent eval audit by a non-AEGIS team, twice a year</li>
+            <li>Model cards published per agent — what it does, what it can't, how it fails</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>Cost & ROI economics</h4>
+          <ul>
+            <li>Toil hours saved per onboarded app, baselined at onboarding</li>
+            <li>MTTR delta vs. pre-AEGIS baseline, attributed by mode (suggest / approve / auto)</li>
+            <li>Token-cost per resolved incident — track and squeeze</li>
+            <li>Executive dashboard: business value in dollars, not just dashboards</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <h4>The operating model</h4>
+          <ul>
+            <li>SRE platform team becomes a <strong>customer success function</strong> for AEGIS</li>
+            <li>Each onboarded app gets a quarterly business review — what worked, what to retire</li>
+            <li>"Embedded SRE" pattern for the first 30 days of every onboarding</li>
+            <li>AEGIS office hours, demo Fridays, internal AMA — adoption is a relationship, not a release</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="deliverables">
+        <span class="label">Phase 4 exit criteria</span>
+        25+ apps onboarded across three lines of business. Provable MTTR reduction of 40%+ on tier-1 services. AEGIS surviving an independent audit. A successor on the team who can run a release cycle without me in the room.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CODE CONTEXT DEEP DIVE ============== -->
+<section>
+  <div class="kicker">03 · Deep Dive</div>
+  <h2>Code-aware runbooks, <em>layer by layer.</em></h2>
+  <p class="lede">The shortest version of the case for this phase: an agent that can read the diff that broke production gives you a different category of runbook than one that can only read the alert. This is the architecture for that capability — built to slot under the existing Strategist without disturbing the demo's contract.</p>
+
+  <div class="codex">
+    <div class="layer">
+      <div class="l-num">01</div>
+      <div>
+        <div class="l-name">Repository onboarding</div>
+        <div class="l-tag">Auth · Pull · Webhook</div>
+      </div>
+      <div class="l-body">GitHub-App style auth scoped per app. Initial clone, then incremental updates via webhooks on push, PR merge, and tag. CODEOWNERS resolved against AD on first index — gives us the human routing graph that every later layer reuses.</div>
+    </div>
+
+    <div class="layer">
+      <div class="l-num">02</div>
+      <div>
+        <div class="l-name">Code indexing</div>
+        <div class="l-tag">Tree-sitter · Symbol graph · Topology</div>
+      </div>
+      <div class="l-body">Per language, parse to AST and emit the symbol graph: <code>class · function · import · call</code>. Cross-link to deployment topology pulled from K8s manifests and Terraform. Output is a graph where a node is "a thing that can fail" and edges are "things that fail because of it."</div>
+    </div>
+
+    <div class="layer">
+      <div class="l-num">03</div>
+      <div>
+        <div class="l-name">Embedding & vector store</div>
+        <div class="l-tag">Code-tuned model · pgvector · Hybrid retrieval</div>
+      </div>
+      <div class="l-body">Chunk on function boundaries, not lines — preserves semantic units. BM25 for symbol-exact queries (<em>find me <code>OrderProcessor.validate</code></em>); dense for semantic queries (<em>functions that look like ours and have failed elsewhere</em>); rerank for the final shortlist.</div>
+    </div>
+
+    <div class="layer">
+      <div class="l-num">04</div>
+      <div>
+        <div class="l-name">Incident-to-code resolver</div>
+        <div class="l-tag">Stack frames · Recent diffs · Past incidents</div>
+      </div>
+      <div class="l-body">When the Strategist receives an alert, this layer assembles a <em>code-context packet</em>: the failing function source, the diff that touched it most recently, the last three PRs through the same path, and the top-3 historically-similar incidents with their resolutions. Bounded to 8K tokens — tight enough to not bloat the Strategist's window.</div>
+    </div>
+
+    <div class="layer">
+      <div class="l-num">05</div>
+      <div>
+        <div class="l-name">Code-aware Strategist</div>
+        <div class="l-tag">Confidence-scored hypotheses · Cause-and-fix runbooks</div>
+      </div>
+      <div class="l-body">The Strategist's prompt is unchanged in shape — it just receives a richer context packet. Output now carries explicit hypotheses with confidence scores. Below threshold: degrade to symptom-only runbook. Above threshold: propose code-level fix (revert, hotfix, feature-flag toggle) as a first-class step.</div>
+    </div>
+
+    <div class="layer">
+      <div class="l-num">06</div>
+      <div>
+        <div class="l-name">Resolution capture & learning</div>
+        <div class="l-tag">Post-mortem ingestion · Memory · Eval feedback</div>
+      </div>
+      <div class="l-body">After resolution: capture which hypothesis was correct, which fix actually worked, the timing, and the human notes. Vector-index this into <code>incident_history</code> — a permanent, searchable memory. Feeds the per-repo "lessons learned" prompt cache and the weekly eval regression set.</div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="step">
+      <div class="marker">T+0s</div>
+      <div class="text">Dynatrace fires <code>P1 — cds-gateway latency p99 &gt; 2.4s</code>. Webhook hits the Ingestor.</div>
+    </div>
+    <div class="step">
+      <div class="marker">T+3s</div>
+      <div class="text">AIOps MCP correlates with a Splunk error spike: <em>NullPointerException in <code>OrderProcessor.validate()</code></em> across three pods.</div>
+    </div>
+    <div class="step">
+      <div class="marker">T+5s</div>
+      <div class="text">Code resolver retrieves: function source · last diff (PR #234 merged 6h ago by @alice) · two similar past incidents — both resolved by reverting the introducing PR.</div>
+    </div>
+    <div class="step">
+      <div class="marker">T+9s</div>
+      <div class="text">Strategist returns a runbook with <strong>two ranked hypotheses</strong>: (a) PR #234 introduced an unguarded path — <em>confidence 0.82</em>; (b) downstream Postgres degradation — <em>confidence 0.31</em>.</div>
+    </div>
+    <div class="step">
+      <div class="marker">T+10s</div>
+      <div class="text">Sub-Agents stage: revert PR #234, scale-up to absorb load, page @alice with the diff highlighted. None execute — service is in <code>approval_required</code> mode.</div>
+    </div>
+    <div class="step outcome">
+      <div class="marker">T+90s</div>
+      <div class="text">On-call approves the staged plan in one click. Revert ships. p99 recovers in 3 minutes. Resolution captured into incident_history; eval harness picks it up Friday and confirms the cause was correct.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FDE OPERATING MODEL ============== -->
+<section>
+  <div class="kicker">04 · The FDE Lens</div>
+  <h2>Two readings of "forward-deployed" — <em>both apply, both compound.</em></h2>
+  <p class="lede">The first lens is operational: AEGIS doesn't get adopted, it gets deployed — and every onboarded app team is an FDE engagement, not a ticket. The second is positional: AEGIS is the strongest portfolio asset I have for the FDE roles I'm targeting next. Treating both deliberately is what turns this from "a thing my team uses" into a category-defining piece of work.</p>
+
+  <div class="two-col">
+    <div class="col">
+      <h3>Lens one — AEGIS as a forward-deployed product</h3>
+      <p>The Palantir / Anthropic / Databricks FDE pattern is the right operating template for AEGIS adoption inside the bank. Each app team is an "engagement," not a config form.</p>
+
+      <h4>The engagement loop</h4>
+      <ul style="list-style:none;padding:0;font-size:15.5px;line-height:1.6;color:var(--ink-2);">
+        <li style="padding-left:18px;position:relative;margin-bottom:10px;"><span style="position:absolute;left:0;color:var(--copper);font-weight:600;">›</span><strong>Discovery</strong> — embedded SRE shadows the team's incidents for one full on-call rotation. We learn what hurts before we offer a fix.</li>
+        <li style="padding-left:18px;position:relative;margin-bottom:10px;"><span style="position:absolute;left:0;color:var(--copper);font-weight:600;">›</span><strong>Onboard</strong> — together, fill in <code>aegis.yaml</code>. We tune retrieval, write the first runbook overrides, run pre-flight on the MCPs.</li>
+        <li style="padding-left:18px;position:relative;margin-bottom:10px;"><span style="position:absolute;left:0;color:var(--copper);font-weight:600;">›</span><strong>Shadow</strong> — two weeks where AEGIS observes only. We compare every generated runbook to the human response. They earn trust through evidence, not promises.</li>
+        <li style="padding-left:18px;position:relative;margin-bottom:10px;"><span style="position:absolute;left:0;color:var(--copper);font-weight:600;">›</span><strong>Promote</strong> — graduate through Suggest → Approve → Auto on demonstrated accuracy. The team controls the throttle.</li>
+        <li style="padding-left:18px;position:relative;margin-bottom:10px;"><span style="position:absolute;left:0;color:var(--copper);font-weight:600;">›</span><strong>Sustain</strong> — quarterly review, not "set and forget." We measure value created, prune what stopped earning it.</li>
+      </ul>
+
+      <h4>Why this matters for the platform</h4>
+      <p>The single most common failure mode for an internal AI platform is the gap between the demo and the messy reality of someone else's codebase. The FDE model exists exactly to close that gap. AEGIS uses it deliberately: the platform's job is to make the engagement repeatable; the engagement's job is to keep the platform honest.</p>
+    </div>
+
+    <div class="col">
+      <h3>Lens two — AEGIS as career asset</h3>
+      <p>The FDE roles I'm targeting (Anthropic, OpenAI, Databricks, Salesforce Agentforce, Cohere, Palantir) are looking for one thing in a portfolio: <em>did you ship an agentic system into a real, regulated production environment, and did you make it survive?</em> That's exactly what AEGIS is. The work is to publish it well enough that this is obvious.</p>
+
+      <h4>The publishable surface</h4>
+      <ul style="list-style:none;padding:0;font-size:15.5px;line-height:1.6;color:var(--ink-2);">
+        <li style="padding-left:18px;position:relative;margin-bottom:10px;"><span style="position:absolute;left:0;color:var(--copper);font-weight:600;">›</span><strong>Architecture brief</strong> — AEGIS in Anthropic's vocabulary: an orchestrator-workers pattern with an evaluator-optimizer loop on the runbook layer. Mapped to MCP. Posted to forever_an_arjuna.</li>
+        <li style="padding-left:18px;position:relative;margin-bottom:10px;"><span style="position:absolute;left:0;color:var(--copper);font-weight:600;">›</span><strong>Failure-mode tree</strong> — the top ten ways AEGIS fails, the mitigation for each, the residual risk we accept. This is the artifact senior FDE interviewers care about most.</li>
+        <li style="padding-left:18px;position:relative;margin-bottom:10px;"><span style="position:absolute;left:0;color:var(--copper);font-weight:600;">›</span><strong>Eval harness writeup</strong> — golden set construction, judge-LLM design, drift detection. Standalone-shippable; the harness itself is a portfolio piece.</li>
+        <li style="padding-left:18px;position:relative;margin-bottom:10px;"><span style="position:absolute;left:0;color:var(--copper);font-weight:600;">›</span><strong>Code-context essay</strong> — the missing layer in agentic SRE. A first-principles argument that earns the right to publish the architecture above it.</li>
+        <li style="padding-left:18px;position:relative;margin-bottom:10px;"><span style="position:absolute;left:0;color:var(--copper);font-weight:600;">›</span><strong>FDE Operating Manual</strong> — a one-pager I keep in front of me through every interview, derived from this brief.</li>
+      </ul>
+
+      <h4>What stays inside the bank, what leaves</h4>
+      <p>JPMC-specific telemetry, runbooks, identifiers, and any architecture detail that constitutes IP — never leave. The patterns (orchestrator-workers, evaluator-optimizer, code-context retrieval, FDE-style onboarding) — these are industry-standard concepts I've practiced at production scale. That's the line, drawn the way it has always been drawn between AEGIS and untech.ai.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== METRICS ============== -->
+<section>
+  <div class="kicker">05 · How we'll know</div>
+  <h2>Five numbers that tell the truth.</h2>
+  <p class="lede">Pick metrics you can defend in a steering committee and that an app owner can feel. Avoid vanity. The five below are the ones I'd put on a single executive page.</p>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="num">40%</div>
+      <div class="label">MTTR reduction on onboarded Tier-1 services</div>
+    </div>
+    <div class="metric">
+      <div class="num">≥85%</div>
+      <div class="label">Suggestion accept rate before auto-mode promotion</div>
+    </div>
+    <div class="metric">
+      <div class="num">&lt;5%</div>
+      <div class="label">Cause-attribution hallucination rate, judged by app owners</div>
+    </div>
+    <div class="metric">
+      <div class="num">25+</div>
+      <div class="label">Apps onboarded across 3 LOBs by month 12</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== RISKS ============== -->
+<section>
+  <div class="kicker">06 · What could go wrong</div>
+  <h2>Risks worth naming early.</h2>
+
+  <div class="risks">
+    <div class="risk">
+      <div class="head">Over-trust in code context</div>
+      <div class="body">A confident-sounding wrong cause is worse than no cause. <strong>Mitigation:</strong> hard confidence thresholds, mandatory human approval below them, eval harness that explicitly tests "the agent was sure and was wrong."</div>
+    </div>
+    <div class="risk">
+      <div class="head">Indirect prompt injection through logs and tickets</div>
+      <div class="body">A Splunk log line containing adversarial instructions can manipulate the Strategist. <strong>Mitigation:</strong> input partitioning, structured-output enforcement, an injection-detection eval that we run before every release.</div>
+    </div>
+    <div class="risk">
+      <div class="head">Regulatory creep</div>
+      <div class="body">An autonomous agent that touches production in a Tier-1 bank attracts CISO, ORM, and audit attention quickly. <strong>Mitigation:</strong> bring them in at Phase 1, not Phase 4. Their concerns are not blockers; their absence is.</div>
+    </div>
+    <div class="risk">
+      <div class="head">Adoption stalls at app three</div>
+      <div class="body">Internal tools are graveyards of platforms that worked for the team that built them. <strong>Mitigation:</strong> the FDE operating model — explicit engagements, named owners, quarterly value reviews. Adoption is a relationship.</div>
+    </div>
+    <div class="risk">
+      <div class="head">IP boundary leakage</div>
+      <div class="body">AEGIS framing accidentally migrating into untech.ai or public writing in a way that creates legal ambiguity. <strong>Mitigation:</strong> the boundary I already hold — AEGIS-specific architecture stays inside; industry patterns are mine to write about.</div>
+    </div>
+    <div class="risk">
+      <div class="head">Cost runaway under high-incident weeks</div>
+      <div class="body">An agent run is cheap; ten thousand are not. <strong>Mitigation:</strong> per-tenant token budgets, model fallback chain, alert when daily spend crosses 1.5× rolling median.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CLOSING ============== -->
+<section class="closing">
+  <p class="pull">The demo earned us the right to ask a harder question — not <em>can it work</em>, but <em>can the bank lean on it</em>. The next twelve months are the answer to that question, written in code, audits, and onboarded teams.</p>
+  <p style="font-family:var(--display);font-style:italic;color:var(--ink-2);font-size:18px;max-width:720px;line-height:1.55;">Every phase is sequenced so the work earns the next phase's permission. Hardening earns the right to add code context. Code context earns the right to onboard widely. Onboarding earns the right to scale governance. And underneath all of it, the FDE posture — toward our internal customers and toward the world I'm writing this for — is the operating discipline that keeps it honest.</p>
+
+  <div class="signoff">
+    forever_an_arjuna · End of Brief · v1.0
+  </div>
+</section>
+
+</div>
+</body>
+</html>
