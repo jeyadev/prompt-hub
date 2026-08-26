@@ -1,0 +1,8 @@
+Kunal,
+
+Fair miss on my end — I was out sick yesterday and the little time I had online went to the Swiss performance issue, so the repave/LB follow-up slipped. Worth noting I do stay on top of these normally (chased the same repave activity with Aayushi last week), so this isn't a tracking discipline gap — it's a single-point-of-failure gap: these ad hoc repave asks only close if I personally chase them down.
+
+Proposal: route these through CDS app team as a Jira, assigned to whoever's on-call, so it's tracked on their daily Kanban instead of living in my head. Gives us accountability and a paper trail instead of relying on memory across one person. I'll set this up unless you see a reason not to.
+
+Thanks & Regards,
+Jey
