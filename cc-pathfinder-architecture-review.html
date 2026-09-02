@@ -1,0 +1,793 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CC Pathfinder — agentic architecture review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16222E; --paper:#E9EDEF; --surface:#FFFFFF; --rule:#CBD5DA;
+  --muted:#5A6B77; --faint:#8496A2;
+  --sev1:#9E2B25; --sev2:#A76A15; --sev3:#3F6B80;
+  --read:#1F6F5C; --scoped:#A76A15; --write:#9E2B25; --control:#414585;
+  --sans:"IBM Plex Sans",system-ui,sans-serif;
+  --serif:"IBM Plex Serif",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--sans);font-weight:600;line-height:1.25;margin:0}
+h1{font-size:30px;letter-spacing:-0.015em}
+h2{font-size:22px;letter-spacing:-0.01em}
+h3{font-size:17px}
+h4{font-size:14px;font-weight:600}
+p{margin:0 0 14px}
+a{color:var(--control)}
+code{font-family:var(--mono);font-size:0.87em;background:#DEE5E9;padding:1px 5px;border-radius:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* masthead */
+header.mast{background:var(--ink);color:#DDE5EA;padding:44px 0 38px;border-bottom:5px solid var(--sev1)}
+header.mast h1{color:#fff;max-width:22ch}
+.mast .verdict{font-family:var(--serif);font-size:19px;line-height:1.55;max-width:62ch;margin:18px 0 0;color:#C3D0D8}
+.mast .meta{margin-top:26px;display:flex;flex-wrap:wrap;gap:26px;font-family:var(--sans);font-size:13px;color:#8DA2B0}
+.mast .meta b{display:block;color:#E4EBEF;font-weight:500;font-size:14px;margin-top:2px}
+
+/* layout */
+.shell{display:grid;grid-template-columns:200px 1fr;gap:44px;padding:40px 0 90px}
+nav.toc{position:sticky;top:24px;align-self:start;font-family:var(--sans);font-size:13.5px}
+nav.toc ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--rule)}
+nav.toc a{display:block;padding:6px 0 6px 14px;color:var(--muted);text-decoration:none;margin-left:-2px;border-left:2px solid transparent}
+nav.toc a:hover{color:var(--ink)}
+nav.toc a.on{color:var(--ink);border-left-color:var(--sev1);font-weight:500}
+main{min-width:0}
+section{margin-bottom:56px;scroll-margin-top:20px}
+section>p,section>.lede{max-width:70ch}
+.lede{font-size:17px;color:#2C3B47;margin:14px 0 26px;max-width:68ch}
+h2+.rule{height:2px;background:var(--ink);margin:12px 0 20px;max-width:100%}
+
+/* tables */
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:13.5px;background:var(--surface)}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+thead th{background:#DCE3E7;font-weight:600;font-size:12.5px;border-bottom:2px solid var(--ink)}
+tbody th{font-weight:500;color:var(--muted);width:150px}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--rule)}
+
+/* diagram */
+.figure{background:var(--surface);border:1px solid var(--rule);padding:20px}
+.figure .scroll{overflow-x:auto}
+.figure svg{display:block;min-width:640px;width:100%;height:auto;font-family:var(--sans)}
+.hint{font-family:var(--sans);font-size:13px;color:var(--muted);margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.hint::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--sev1);flex:none}
+g.hit{cursor:pointer}
+g.hit rect{transition:filter .12s}
+g.hit:hover rect{filter:brightness(.955)}
+g.hit.sel rect.n{stroke-width:2.5}
+g.hit:focus{outline:none}
+g.hit:focus-visible rect.n{stroke:var(--control);stroke-width:3}
+svg text{font-size:12.5px;fill:var(--ink)}
+svg text.sm{font-size:11px}
+svg text.lbl{font-size:10.5px;fill:var(--faint)}
+svg .arr{stroke:#7E93A0;stroke-width:1.2;fill:none}
+
+/* detail panel */
+.detail{border:1px solid var(--rule);border-top:none;background:#F6F8F9;padding:20px 22px;font-family:var(--sans);font-size:14px;min-height:112px}
+.detail.empty{color:var(--muted);display:flex;align-items:center;font-style:italic;font-family:var(--serif)}
+.detail h3{margin-bottom:4px}
+.detail .kicker{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+.detail p{font-family:var(--sans);font-size:14px;line-height:1.6;margin:0 0 12px;max-width:74ch}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+.chip{font-family:var(--sans);font-size:12px;padding:3px 9px;border:1px solid var(--rule);background:var(--surface);border-radius:2px;cursor:pointer;color:var(--ink)}
+.chip:hover{border-color:var(--ink)}
+.chip b{font-weight:600}
+
+/* findings */
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px;font-family:var(--sans);font-size:13px}
+button.f{font:inherit;padding:6px 12px;border:1px solid var(--rule);background:var(--surface);color:var(--muted);cursor:pointer;border-radius:2px}
+button.f:hover{border-color:var(--ink);color:var(--ink)}
+button.f[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.count{color:var(--muted);margin-left:auto}
+
+.finding{background:var(--surface);border:1px solid var(--rule);border-left:5px solid var(--rule);margin-bottom:8px}
+.finding[data-sev="1"]{border-left-color:var(--sev1)}
+.finding[data-sev="2"]{border-left-color:var(--sev2)}
+.finding[data-sev="3"]{border-left-color:var(--sev3)}
+.finding>button{width:100%;text-align:left;background:none;border:0;padding:14px 18px;cursor:pointer;font-family:var(--sans);display:grid;grid-template-columns:58px 1fr 22px;gap:14px;align-items:baseline;color:inherit}
+.finding>button:hover{background:#F4F7F8}
+.fid{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted)}
+.ftitle{font-size:15px;font-weight:500;line-height:1.4}
+.ftheme{display:block;font-size:12px;color:var(--muted);font-weight:400;margin-top:3px}
+.caret{justify-self:end;color:var(--faint);transition:transform .15s}
+.finding.open .caret{transform:rotate(90deg)}
+.fbody{display:none;padding:0 18px 18px 90px;font-family:var(--sans);font-size:14px}
+.finding.open .fbody{display:block}
+.fbody dl{margin:0;display:grid;grid-template-columns:130px 1fr;gap:10px 18px;align-items:baseline}
+.fbody dt{font-size:12.5px;font-weight:600;color:var(--muted);margin:0}
+.fbody dd{margin:0;line-height:1.6;max-width:72ch}
+.scen{border-left:2px solid var(--rule);padding-left:14px;color:#33434F}
+
+/* decisions */
+.dec{background:var(--surface);border:1px solid var(--rule);padding:2px 0}
+.dec label{display:grid;grid-template-columns:26px 54px 1fr;gap:12px;padding:13px 18px;border-bottom:1px solid var(--rule);cursor:pointer;font-family:var(--sans);font-size:14px;align-items:baseline}
+.dec label:last-child{border-bottom:0}
+.dec label:hover{background:#F4F7F8}
+.dec input{margin:0;align-self:center;width:16px;height:16px;accent-color:var(--control)}
+.dec .did{font-size:12px;font-weight:600;color:var(--muted)}
+.dec .dtxt b{display:block;font-weight:500;margin-bottom:2px}
+.dec .dtxt span{color:var(--muted);font-size:13px}
+.dec input:checked ~ .dtxt{opacity:.5;text-decoration:line-through}
+.progress{font-family:var(--sans);font-size:13px;color:var(--muted);margin-top:12px}
+
+/* misc blocks */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.card{background:var(--surface);border:1px solid var(--rule);padding:18px 20px}
+.card h4{margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
+.card ul{margin:0;padding-left:18px;font-family:var(--sans);font-size:13.5px;line-height:1.6}
+.card li{margin-bottom:8px}
+pre{background:var(--ink);color:#CFDCE4;padding:18px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.65;margin:0}
+.phase{display:grid;grid-template-columns:14px 1fr;gap:18px;margin-bottom:22px}
+.phase .bar{background:var(--rule);width:5px;margin-left:4px}
+.phase[data-t="read"] .bar{background:var(--read)}
+.phase[data-t="scoped"] .bar{background:var(--scoped)}
+.phase[data-t="write"] .bar{background:var(--write)}
+.phase h3{margin-bottom:6px}
+.phase p{margin-bottom:8px;max-width:68ch}
+.gate{font-family:var(--sans);font-size:13px;background:var(--surface);border:1px solid var(--rule);padding:9px 13px;display:inline-block}
+.gate b{color:var(--sev1)}
+ul.plain{font-family:var(--sans);font-size:14.5px;line-height:1.65;padding-left:20px;max-width:72ch}
+ul.plain li{margin-bottom:10px}
+footer{border-top:1px solid var(--rule);padding:24px 0 60px;font-family:var(--sans);font-size:13px;color:var(--muted)}
+@media (max-width:920px){
+  .shell{grid-template-columns:1fr;gap:0}
+  nav.toc{display:none}
+  .cols{grid-template-columns:1fr}
+  .fbody{padding-left:18px}
+  .fbody dl{grid-template-columns:1fr;gap:4px 0}
+  .fbody dt{margin-top:10px}
+  h1{font-size:25px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto}}
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <h1>CC Pathfinder: agentic architecture review</h1>
+    <p class="verdict">The component vocabulary is right. The decomposition axis is wrong. This system is split by technical function — retrieval, rules, orchestration — when it needs to be split by risk tier and ownership boundary. Every finding below follows from that.</p>
+    <div class="meta">
+      <div>Scope<b>Proposed target-state architecture</b></div>
+      <div>Findings<b>20 across 4 severity themes</b></div>
+      <div>Blocking<b>6 severity-1 items</b></div>
+      <div>Review stance<b>Design review, pre-build</b></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap shell">
+<nav class="toc" aria-label="Sections">
+  <ol>
+    <li><a href="#s1">Verdict</a></li>
+    <li><a href="#s2">Three workloads</a></li>
+    <li><a href="#s3">Current architecture</a></li>
+    <li><a href="#s4">Findings register</a></li>
+    <li><a href="#s5">Target architecture</a></li>
+    <li><a href="#s6">Policy engine</a></li>
+    <li><a href="#s7">Sequencing</a></li>
+    <li><a href="#s8">Open decisions</a></li>
+    <li><a href="#s9">Follow-up threads</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="s1">
+  <h2>Verdict</h2><div class="rule"></div>
+  <p class="lede">CC Pathfinder is described as a one-stop solution for all document-related operational needs, serving both business consumers and operational engineers. That is a product statement. Architecturally it hides three systems with almost nothing in common.</p>
+  <p>The proposed design routes all three through one chat surface, one agent chain, one orchestrator, one identity. The SRE equivalent is putting the customer status page, the read-only ops console, and the production runbook executor in the same deployment behind the same service account. You would not accept that for a service. The word "agent" in front of it does not change the calculus.</p>
+  <p>The blast radius argument settles it on its own. A hallucination in the FAQ path costs a confused product owner. The same model, in the same process, one hop from an orchestrator that can act on eSign and CDS, costs a change record nobody can explain to audit.</p>
+  <p>Second structural problem: the Rule Agent holds capability knowledge for systems it does not own. The application teams own their runbooks. A central mirror of those runbooks goes stale the moment it is built. This is the enterprise service bus anti-pattern with a language model bolted on, and it is also the stale-central-runbook-repository problem most SRE organisations have already lost once.</p>
+</section>
+
+<section id="s2">
+  <h2>Three workloads wearing one costume</h2><div class="rule"></div>
+  <p class="lede">Before any component critique, the decomposition. These three columns have different consumers, different truth sources, different failure modes, different acceptable latencies, and different correct behaviour under uncertainty. Nothing about them wants to share a deployment.</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th></th><th>Knowledge</th><th>State</th><th>Operate</th></tr></thead>
+    <tbody>
+      <tr><th>Representative question</th><td>How do I onboard to ccintake?</td><td>Where is envelope 8842?</td><td>CDS ingestion is failing. What do I run?</td></tr>
+      <tr><th>Consumer</th><td>Users, POs</td><td>Users, POs, engineers</td><td>Engineers only</td></tr>
+      <tr><th>Source of truth</th><td>Curated documents</td><td>Live application APIs</td><td>Telemetry plus owned runbooks</td></tr>
+      <tr><th>Worst failure</th><td>Stale answer</td><td>Wrong status or wrong entitlement</td><td>Wrong action on production</td></tr>
+      <tr><th>Latency tolerance</th><td>5–10 seconds</td><td>2–3 seconds</td><td>Minutes, asynchronous</td></tr>
+      <tr><th>Correct response to uncertainty</th><td>Say so, cite nothing</td><td>Hard fail</td><td>Escalate to a human</td></tr>
+      <tr><th>Authorization model</th><td>Document-level ACL</td><td>Per-user entitlement on every call</td><td>Privileged, approval-gated</td></tr>
+      <tr><th>Change cadence</th><td>Content, weekly</td><td>API contracts, quarterly</td><td>Runbooks, continuously</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="s3">
+  <h2>Current architecture, annotated</h2><div class="rule"></div>
+  <p class="lede">The proposed design as drawn. Select any component to see the findings attached to it and the questions it raises.</p>
+  <div class="figure">
+    <p class="hint">Select a component to read its findings</p>
+    <div class="scroll">
+    <svg viewBox="0 0 720 500" role="img" aria-label="Current CC Pathfinder architecture with clickable components">
+      <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="#7E93A0" stroke-width="1.6" stroke-linecap="round"/></marker></defs>
+
+      <g class="hit" tabindex="0" role="button" data-k="users" aria-label="Users and POs">
+        <rect class="n" x="130" y="26" width="160" height="44" rx="3" fill="#fff" stroke="#9FB0BA"/>
+        <text x="210" y="52" text-anchor="middle">Users / POs</text></g>
+      <g class="hit" tabindex="0" role="button" data-k="tech" aria-label="Tech users">
+        <rect class="n" x="370" y="26" width="160" height="44" rx="3" fill="#fff" stroke="#9FB0BA"/>
+        <text x="450" y="52" text-anchor="middle">Tech</text></g>
+      <text class="lbl" x="215" y="88">chat assistant</text>
+      <text class="lbl" x="455" y="88">chat + ServiceNow incidents</text>
+      <line class="arr" x1="210" y1="70" x2="210" y2="126" marker-end="url(#a)"/>
+      <line class="arr" x1="450" y1="70" x2="450" y2="126" marker-end="url(#a)"/>
+
+      <g class="hit" tabindex="0" role="button" data-k="pathfinder" aria-label="CC Pathfinder core">
+        <rect class="n" x="130" y="130" width="400" height="52" rx="3" fill="#E9E9F4" stroke="#414585"/>
+        <text x="330" y="161" text-anchor="middle" style="font-weight:600;fill:#2A2D58">CC Pathfinder</text></g>
+
+      <g class="hit" tabindex="0" role="button" data-k="snow" aria-label="ServiceNow">
+        <rect class="n" x="588" y="112" width="112" height="40" rx="3" fill="#EDF1F3" stroke="#7E93A0"/>
+        <text x="644" y="136" text-anchor="middle" class="sm">ServiceNow</text></g>
+      <g class="hit" tabindex="0" role="button" data-k="obs" aria-label="Splunk and Dynatrace">
+        <rect class="n" x="588" y="162" width="112" height="40" rx="3" fill="#EDF1F3" stroke="#7E93A0"/>
+        <text x="644" y="186" text-anchor="middle" class="sm">Splunk</text></g>
+      <g class="hit" tabindex="0" role="button" data-k="obs" aria-label="Dynatrace">
+        <rect class="n" x="588" y="212" width="112" height="40" rx="3" fill="#EDF1F3" stroke="#7E93A0"/>
+        <text x="644" y="236" text-anchor="middle" class="sm">Dynatrace</text></g>
+      <path class="arr" d="M530 146 L560 146 L560 132 L584 132" marker-end="url(#a)"/>
+      <path class="arr" d="M530 156 L568 156 L568 182 L584 182" marker-end="url(#a)"/>
+      <path class="arr" d="M530 166 L576 166 L576 232 L584 232" marker-end="url(#a)"/>
+
+      <g class="hit" tabindex="0" role="button" data-k="kb" aria-label="S3 knowledge corpus">
+        <rect class="n" x="14" y="228" width="118" height="86" rx="3" fill="#E3F0EC" stroke="#1F6F5C" stroke-dasharray="5 4"/>
+        <text x="73" y="256" text-anchor="middle" class="sm" style="fill:#14453A">S3 corpus</text>
+        <text x="73" y="274" text-anchor="middle" class="lbl">prod support, FAQs</text>
+        <text x="73" y="290" text-anchor="middle" class="lbl">ccintake, KB</text></g>
+
+      <g class="hit" tabindex="0" role="button" data-k="rag" aria-label="RAG Agent">
+        <rect class="n" x="160" y="248" width="150" height="46" rx="3" fill="#E3F0EC" stroke="#1F6F5C"/>
+        <text x="235" y="276" text-anchor="middle" style="fill:#14453A">RAG agent</text></g>
+      <g class="hit" tabindex="0" role="button" data-k="rule" aria-label="Rule Agent">
+        <rect class="n" x="350" y="248" width="150" height="46" rx="3" fill="#F7EEDD" stroke="#A76A15"/>
+        <text x="425" y="276" text-anchor="middle" style="fill:#6B4309">Rule agent</text></g>
+      <line class="arr" x1="235" y1="182" x2="235" y2="244" marker-end="url(#a)"/>
+      <line class="arr" x1="425" y1="182" x2="425" y2="244" marker-end="url(#a)"/>
+      <line class="arr" x1="160" y1="271" x2="136" y2="271" marker-end="url(#a)"/>
+      <line class="arr" x1="310" y1="271" x2="346" y2="271" marker-end="url(#a)" stroke="#9E2B25" stroke-width="2"/>
+      <text class="lbl" x="328" y="264" text-anchor="middle" style="fill:#9E2B25">F-02</text>
+
+      <g class="hit" tabindex="0" role="button" data-k="orch" aria-label="Service Orchestrator">
+        <rect class="n" x="190" y="346" width="320" height="46" rx="3" fill="#F7E7E6" stroke="#9E2B25"/>
+        <text x="350" y="374" text-anchor="middle" style="fill:#6B1A16">Service orchestrator</text></g>
+      <line class="arr" x1="425" y1="294" x2="425" y2="342" marker-end="url(#a)"/>
+
+      <g class="hit" tabindex="0" role="button" data-k="apps" aria-label="Downstream applications">
+        <rect class="n" x="150" y="436" width="104" height="40" rx="3" fill="#fff" stroke="#9FB0BA"/>
+        <text x="202" y="460" text-anchor="middle" class="sm">eSign</text>
+        <rect class="n" x="270" y="436" width="104" height="40" rx="3" fill="#fff" stroke="#9FB0BA"/>
+        <text x="322" y="460" text-anchor="middle" class="sm">CDS</text>
+        <rect class="n" x="390" y="436" width="104" height="40" rx="3" fill="#fff" stroke="#9FB0BA"/>
+        <text x="442" y="460" text-anchor="middle" class="sm">CX</text>
+        <rect class="n" x="510" y="436" width="104" height="40" rx="3" fill="#fff" stroke="#9FB0BA"/>
+        <text x="562" y="460" text-anchor="middle" class="sm">Other CC apps</text></g>
+      <path class="arr" d="M350 392 L350 414 L202 414 L202 432" marker-end="url(#a)"/>
+      <path class="arr" d="M350 392 L350 414 L322 414 L322 432" marker-end="url(#a)"/>
+      <path class="arr" d="M350 392 L350 414 L442 414 L442 432" marker-end="url(#a)"/>
+      <path class="arr" d="M350 392 L350 414 L562 414 L562 432" marker-end="url(#a)"/>
+    </svg>
+    </div>
+  </div>
+  <div class="detail empty" id="d-cur">Nothing selected. Choose a component above.</div>
+</section>
+
+<section id="s4">
+  <h2>Findings register</h2><div class="rule"></div>
+  <p class="lede">Twenty findings, severity-ranked. Severity 1 blocks build. Severity 2 blocks production. Severity 3 blocks scale. Each entry carries the concrete failure scenario, because a finding without a scenario is an opinion.</p>
+  <div class="controls">
+    <span>Severity</span>
+    <button class="f" data-sev="all" aria-pressed="true">All</button>
+    <button class="f" data-sev="1" aria-pressed="false">1 — blocking</button>
+    <button class="f" data-sev="2" aria-pressed="false">2 — pre-production</button>
+    <button class="f" data-sev="3" aria-pressed="false">3 — pre-scale</button>
+    <button class="f" id="expand" style="margin-left:14px">Expand all</button>
+    <span class="count" id="fcount"></span>
+  </div>
+  <div id="findings"></div>
+</section>
+
+<section id="s5">
+  <h2>Target architecture</h2><div class="rule"></div>
+  <p class="lede">Same capabilities, decomposed by risk and ownership instead of by technical function. Colour encodes risk tier. Select any component for what it owns, what it must not own, and how it fails.</p>
+  <div class="figure">
+    <p class="hint">Select a component to read its contract</p>
+    <div class="scroll">
+    <svg viewBox="0 0 720 560" role="img" aria-label="Target risk-tiered architecture with clickable components">
+      <defs><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="#7E93A0" stroke-width="1.6" stroke-linecap="round"/></marker></defs>
+
+      <g class="hit" tabindex="0" role="button" data-k="tchat" aria-label="Chat clients">
+        <rect class="n" x="128" y="24" width="180" height="48" rx="3" fill="#fff" stroke="#9FB0BA"/>
+        <text x="218" y="45" text-anchor="middle">Chat clients</text>
+        <text x="218" y="62" text-anchor="middle" class="lbl">users, POs, engineers</text></g>
+      <g class="hit" tabindex="0" role="button" data-k="tinc" aria-label="Incident triggers">
+        <rect class="n" x="380" y="24" width="180" height="48" rx="3" fill="#fff" stroke="#9FB0BA"/>
+        <text x="470" y="45" text-anchor="middle">Incident triggers</text>
+        <text x="470" y="62" text-anchor="middle" class="lbl">ServiceNow events</text></g>
+      <line class="arr" x1="218" y1="72" x2="218" y2="116" marker-end="url(#b)"/>
+      <line class="arr" x1="470" y1="72" x2="470" y2="116" marker-end="url(#b)"/>
+
+      <g class="hit" tabindex="0" role="button" data-k="tsup" aria-label="Pathfinder supervisor">
+        <rect class="n" x="128" y="120" width="432" height="52" rx="3" fill="#E9E9F4" stroke="#414585"/>
+        <text x="344" y="142" text-anchor="middle" style="font-weight:600;fill:#2A2D58">Pathfinder supervisor</text>
+        <text x="344" y="160" text-anchor="middle" class="lbl">identity, intent routing, guardrails</text></g>
+
+      <line class="arr" x1="344" y1="172" x2="344" y2="196"/>
+      <line class="arr" x1="140" y1="196" x2="548" y2="196"/>
+      <line class="arr" x1="140" y1="196" x2="140" y2="218" marker-end="url(#b)"/>
+      <line class="arr" x1="344" y1="196" x2="344" y2="218" marker-end="url(#b)"/>
+      <line class="arr" x1="548" y1="196" x2="548" y2="218" marker-end="url(#b)"/>
+
+      <g class="hit" tabindex="0" role="button" data-k="tk" aria-label="Knowledge tier">
+        <rect class="n" x="46" y="222" width="188" height="52" rx="3" fill="#E3F0EC" stroke="#1F6F5C"/>
+        <text x="140" y="244" text-anchor="middle" style="fill:#14453A;font-weight:500">Knowledge · read</text>
+        <text x="140" y="262" text-anchor="middle" class="lbl">RAG over curated docs</text></g>
+      <g class="hit" tabindex="0" role="button" data-k="ts" aria-label="State tier">
+        <rect class="n" x="250" y="222" width="188" height="52" rx="3" fill="#F7EEDD" stroke="#A76A15"/>
+        <text x="344" y="244" text-anchor="middle" style="fill:#6B4309;font-weight:500">State · read</text>
+        <text x="344" y="262" text-anchor="middle" class="lbl">scoped live lookups</text></g>
+      <g class="hit" tabindex="0" role="button" data-k="to" aria-label="Operate tier">
+        <rect class="n" x="454" y="222" width="188" height="52" rx="3" fill="#F7E7E6" stroke="#9E2B25"/>
+        <text x="548" y="244" text-anchor="middle" style="fill:#6B1A16;font-weight:500">Operate · write</text>
+        <text x="548" y="262" text-anchor="middle" class="lbl">durable, human-gated</text></g>
+
+      <line class="arr" x1="140" y1="274" x2="140" y2="326" marker-end="url(#b)"/>
+      <line class="arr" x1="344" y1="274" x2="344" y2="300" marker-end="url(#b)"/>
+      <line class="arr" x1="548" y1="274" x2="548" y2="300" marker-end="url(#b)"/>
+
+      <g class="hit" tabindex="0" role="button" data-k="tkb" aria-label="Curated knowledge base">
+        <rect class="n" x="46" y="330" width="188" height="52" rx="3" fill="#E3F0EC" stroke="#1F6F5C" stroke-dasharray="5 4"/>
+        <text x="140" y="352" text-anchor="middle" style="fill:#14453A">Curated KB</text>
+        <text x="140" y="370" text-anchor="middle" class="lbl">versioned, ACL'd, owned</text></g>
+
+      <rect x="264" y="304" width="396" height="146" rx="4" fill="none" stroke="#7E93A0" stroke-dasharray="4 4"/>
+      <text class="lbl" x="278" y="322">capability servers, owned by application teams</text>
+      <g class="hit" tabindex="0" role="button" data-k="tcap" aria-label="Capability servers">
+        <rect class="n" x="278" y="332" width="176" height="46" rx="3" fill="#fff" stroke="#9FB0BA"/>
+        <text x="366" y="360" text-anchor="middle" class="sm">eSign</text>
+        <rect class="n" x="470" y="332" width="176" height="46" rx="3" fill="#fff" stroke="#9FB0BA"/>
+        <text x="558" y="360" text-anchor="middle" class="sm">CDS</text>
+        <rect class="n" x="278" y="388" width="176" height="46" rx="3" fill="#fff" stroke="#9FB0BA"/>
+        <text x="366" y="416" text-anchor="middle" class="sm">CX</text>
+        <rect class="n" x="470" y="388" width="176" height="46" rx="3" fill="#fff" stroke="#9FB0BA"/>
+        <text x="558" y="416" text-anchor="middle" class="sm">Other CC apps</text></g>
+
+      <g class="hit" tabindex="0" role="button" data-k="tpol" aria-label="Policy engine">
+        <rect class="n" x="46" y="486" width="300" height="52" rx="3" fill="#E9E9F4" stroke="#414585"/>
+        <text x="196" y="508" text-anchor="middle" style="fill:#2A2D58;font-weight:500">Policy engine</text>
+        <text x="196" y="526" text-anchor="middle" class="lbl">deterministic, versioned, testable</text></g>
+      <g class="hit" tabindex="0" role="button" data-k="ttrace" aria-label="Trace and eval store">
+        <rect class="n" x="362" y="486" width="300" height="52" rx="3" fill="#E9E9F4" stroke="#414585"/>
+        <text x="512" y="508" text-anchor="middle" style="fill:#2A2D58;font-weight:500">Trace and eval store</text>
+        <text x="512" y="526" text-anchor="middle" class="lbl">spans, costs, scores, feedback</text></g>
+      <text class="lbl" x="46" y="472">cross-cutting: every tier consults policy before acting, every hop writes a span</text>
+    </svg>
+    </div>
+  </div>
+  <div class="detail empty" id="d-tgt">Nothing selected. Choose a component above.</div>
+</section>
+
+<section id="s6">
+  <h2>The policy engine contract</h2><div class="rule"></div>
+  <p class="lede">One sentence: it owns the answer to "may this identity perform this action on this resource, right now" and nothing else. Everything it owns follows from keeping that answer deterministic, fast, and explainable after the fact.</p>
+  <div class="cols">
+    <div class="card">
+      <h4>What it owns</h4>
+      <ul>
+        <li><b>The authorization decision.</b> Four inputs always: subject (the propagated end-user identity, never the agent's service account), action (a registered capability id), resource (type, id, attributes from a system of record), context (channel, session, incident, approval state, time).</li>
+        <li><b>Risk-tier registration.</b> Every capability declares its tier on registration. Untiered means denied. This is what turns the tier boundary from a diagram convention into something a machine enforces.</li>
+        <li><b>Obligations, not just verdicts.</b> A permit can carry requirements: redact these fields, require approval, dry-run first, expire in 90 seconds, log to this stream. Obligations buy granularity without a combinatorial rule explosion.</li>
+        <li><b>Data-scoping predicates.</b> Not "may they call the status API" but "which envelopes may they see", returned as a filter applied at query time.</li>
+        <li><b>Approval and break-glass rules.</b> Which actions need a human, who qualifies, what the emergency path costs in extra logging.</li>
+        <li><b>Deny by default.</b> Unknown capability, unresolvable resource, unverifiable identity: deny. Fail closed, always.</li>
+        <li><b>The decision log and policy versioning.</b> Every decision records the policy version that produced it, joined to the trace id. This is the artefact you hand to audit.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>What it must not own</h4>
+      <ul>
+        <li><b>Business rules.</b> "An envelope can only be voided while in Sent status" is eSign's domain logic and lives in eSign's capability server. Policy answers <i>may you</i>; the capability server answers <i>is this valid</i>. Let domain rules migrate in and you have rebuilt the Rule Agent monolith under a new name, deliberately this time.</li>
+        <li><b>Tool selection.</b> The model proposes, policy disposes. The moment policy chooses what to invoke, a probabilistic decision is back in the deterministic seat.</li>
+        <li><b>Prompt guardrails.</b> Injection detection, moderation, PII scrubbing. Different component, different failure mode, different tuning cadence. Do not fuse them because both sometimes say no.</li>
+        <li><b>Anything the model can influence.</b> Inputs come from verified tokens, the capability registry, and systems of record. Never from retrieved text or model output. If a KB document can affect a policy input, you have built an injection path into authorization.</li>
+      </ul>
+    </div>
+  </div>
+  <h3 style="margin:26px 0 12px">Decision contract shape</h3>
+  <pre>{
+  "subject":  { "id": "...", "roles": [], "entitlements": [], "org": "..." },
+  "action":   { "capability": "esign.envelope.void", "tier": "write" },
+  "resource": { "type": "envelope", "id": "8842", "attrs": { "owner_lob": "..." } },
+  "context":  { "channel": "chat", "incident": null, "approvals": [] }
+}
+=>
+{
+  "decision": "permit_with_obligations",
+  "obligations": [
+    { "type": "human_approval", "role": "esign_ops_lead" },
+    { "type": "dry_run_first" },
+    { "type": "ttl_seconds", "value": 300 }
+  ],
+  "scope_filter": "owner_lob = 'AWM' AND client_id IN (...)",
+  "reason_code": "TIER3_REQUIRES_APPROVAL",
+  "policy_version": "2026.09.02-r4"
+}</pre>
+  <h3 style="margin:26px 0 12px">The four things that will break it</h3>
+  <ul class="plain">
+    <li><b>Latency.</b> Policy sits on every tool call in an interactive path. Embedded or sidecar evaluation against a distributed bundle, sub-10ms at p99. A network hop to a central service puts a synchronous dependency in the hot path of everything, and you already know how that ends.</li>
+    <li><b>Availability.</b> Fail-closed is correct, so the decision point's availability budget must exceed the sum of everything behind it. Local evaluation with a cached bundle solves this and latency together. A central service solves neither.</li>
+    <li><b>Identity propagation.</b> If the end user's identity does not survive the hop from supervisor to tier to capability server, policy is evaluating the agent's permissions and you have built expensive theatre. Token exchange or on-behalf-of flows. Prove this end to end before writing a single rule.</li>
+    <li><b>Authoring bottleneck.</b> If your team writes every rule you are the constraint. If application teams write freely, guardrails erode. Two layers: central invariants that always apply and cannot be loosened, plus team rules that can only narrow. Same shape as an admission controller with delegated namespace policy.</li>
+  </ul>
+  <p style="margin-top:18px;max-width:70ch">The test for whether the boundary is drawn right: an application team should be able to change their entire runbook without touching policy, and you should be able to tighten an entitlement rule across all twelve services without touching a single application team's code. If either requires a coordinated release, the boundary is in the wrong place.</p>
+</section>
+
+<section id="s7">
+  <h2>Sequencing</h2><div class="rule"></div>
+  <p class="lede">Ship in risk order, not capability order. Each phase has an entry gate that is a demonstrated property, not a milestone date.</p>
+
+  <div class="phase" data-t="read">
+    <div class="bar"></div>
+    <div>
+      <h3>Phase 1 — knowledge tier alone</h3>
+      <p>Chat plus retrieval over a curated knowledge base. Zero tool access, zero write paths, no orchestrator. This carries most of the FAQ and onboarding value described in the brief, can be live in weeks, and its worst failure is a poor answer to a low-stakes question.</p>
+      <p>It also earns the eval harness and feedback loop cheaply, before the stakes rise. Measure deflection rate and answer correctness against a golden set. Do not measure usage.</p>
+      <span class="gate"><b>Exit gate:</b> golden-set accuracy above an agreed threshold, and a working feedback loop with named curators per corpus</span>
+    </div>
+  </div>
+
+  <div class="phase" data-t="scoped">
+    <div class="bar"></div>
+    <div>
+      <h3>Phase 2 — state tier</h3>
+      <p>Deterministic, entitlement-scoped reads into eSign, CDS, CX. The model selects the capability; the policy engine and the capability server enforce. Answers to state questions are grounded strictly in tool output, never in retrieved text.</p>
+      <span class="gate"><b>Entry gate:</b> a user's own entitlement demonstrably reaches the downstream call, proven end to end. Not a design intent. A working trace.</span>
+    </div>
+  </div>
+
+  <div class="phase" data-t="write">
+    <div class="bar"></div>
+    <div>
+      <h3>Phase 3 — operate tier, and possibly never as chat</h3>
+      <p>Incident-triggered investigation as a durable workflow. Runbooks published by owning teams as capability servers. Approval before mutation, dry-run by default, idempotency keys, per-capability circuit breakers, a kill switch that a single on-call engineer can reach in under a minute.</p>
+      <p>Separate deployment. Separate credentials. Separate failure domain from the estate it diagnoses.</p>
+      <span class="gate"><b>Entry gate:</b> failure-domain separation demonstrated by a game day where the estate is degraded and Pathfinder still answers</span>
+    </div>
+  </div>
+</section>
+
+<section id="s8">
+  <h2>Open decisions</h2><div class="rule"></div>
+  <p class="lede">Ten decisions owed before build. Each changes the architecture, not the backlog. Tick them off as they are settled in writing.</p>
+  <div class="dec" id="decisions"></div>
+  <p class="progress" id="dprog"></p>
+</section>
+
+<section id="s9">
+  <h2>Follow-up threads</h2><div class="rule"></div>
+  <p class="lede">Each of these needs a working session rather than an answer in a review document.</p>
+  <ul class="plain">
+    <li><b>Intent taxonomy.</b> Enumerate the real question set from existing support tickets and ccintake traffic. Classify each as retrieval, lookup, or investigation. Then count what fraction genuinely needs dynamic planning rather than a classified function call. If that fraction is under twenty percent, most of this should not be an agent at all, and the honest design is a deterministic workflow with a language model at the edges: intent classification in, natural language out.</li>
+    <li><b>Identity propagation spike.</b> A two-week proof that an end user's token survives the full chain and that a downstream call rejects a request the user is not entitled to make. This is the gate on the entire state tier and it should be attempted before anything else is built.</li>
+    <li><b>Capability server contract standard.</b> What every application team must publish: capability ids, tiers, input and output schemas, idempotency semantics, dry-run support, error taxonomy, ownership and on-call. Model Context Protocol per domain is the natural fit today. Without a standard you will negotiate twelve bilateral integrations.</li>
+    <li><b>Evaluation design.</b> Golden set per intent, offline regression gates on prompt, model, and index changes, online feedback capture, and a defined bar for what accuracy is good enough to keep serving. Decide who owns the golden set and how it grows from production misses.</li>
+    <li><b>Knowledge curation operating model.</b> Four corpora, four owners, four decay rates. Who is accountable for freshness, what the review cadence is, how deprecated content is tombstoned rather than deleted, and how a document's provenance and last-verified date surface in an answer.</li>
+    <li><b>Failure-domain design.</b> Where Pathfinder runs, what it depends on, and what it can still answer when the estate is degraded. Includes a cached-runbook read path that survives the loss of Splunk, Dynatrace, and ServiceNow simultaneously.</li>
+    <li><b>Action safety catalogue.</b> For every write capability: reversibility, blast radius, approval requirement, dry-run behaviour, idempotency strategy, rate limit, and rollback procedure. Any capability without all seven does not ship.</li>
+    <li><b>Cost model per intent.</b> Token cost, tool-call cost, and telemetry query cost per answered question, with a per-intent budget. Splunk and Dynatrace queries are not free and an agent that fans out on every turn will find that out in production.</li>
+    <li><b>Human factors at three in the morning.</b> How does an engineer verify what Pathfinder told them, quickly, when they are tired and the clock is running? Citations, confidence expression, and a one-click path to the underlying evidence are load-bearing, not polish. A tool that is usually right and occasionally confidently wrong is more dangerous during an incident than no tool.</li>
+    <li><b>Audit evidence package.</b> What you can produce when asked to explain a specific action six months later: decision log, policy version, retrieved context, model version, prompt version, approver identity, and the full trace. Design this before the first write capability, not after the first finding.</li>
+    <li><b>Adoption and trust curve.</b> If the first three answers a team receives are wrong, that team will not come back, and no amount of later accuracy recovers them. Plan the rollout cohort by cohort with a deliberate accuracy bar per cohort rather than a general availability date.</li>
+  </ul>
+</section>
+
+<footer>
+  <div>Architecture review, prepared for the CC Pathfinder design discussion. Findings are directional and based on the proposed diagram; several depend on answers to the open decisions above.</div>
+</footer>
+</main>
+</div>
+
+<script>
+const F = [
+ {id:"F-01",sev:1,theme:"Boundary",comp:["users","tech","pathfinder"],
+  t:"Three workloads fused into one plane",
+  m:"Knowledge, state, and operate have different consumers, truth sources, latencies, authorization models, and correct behaviour under uncertainty. Fusing them forces one set of controls onto three risk profiles, and the controls always settle at the level the lowest-risk workload will tolerate.",
+  s:"A product owner asks a harmless FAQ. The same process, the same identity, and the same prompt surface are one hop from an orchestrator that can act on production document systems. A prompt that works for one path has reach into the other.",
+  r:"Split into three deployments along the risk tiers: read documents, read live state, write. Separate identities, separate credentials, separate release cadences, separate availability targets.",
+  q:"Which of the three workloads is the actual business priority for the first release, and can it ship without the other two?"},
+
+ {id:"F-02",sev:1,theme:"Injection",comp:["rag","rule"],
+  t:"Retrieved document content can steer tool selection",
+  m:"The edge from the RAG agent into the Rule agent means text pulled from S3 influences what gets invoked. Document content is untrusted input. Treating it as an instruction source is the textbook indirect prompt injection path, and it is the most dangerous single line in the current diagram.",
+  s:"A runbook authored three years ago contains a sentence like 'if this occurs, void the envelope and reprocess'. Retrieved into context during an unrelated question, that phrasing biases the Rule agent toward a capability nobody asked for. No attacker required. An unlucky sentence is enough.",
+  r:"Hard-separate the planes. Retrieved content may only ever reach the answer synthesis step, never the tool selection step. Tool selection takes structured intent and the capability registry as input, nothing else. If a document must trigger an action, that path goes through an explicit, reviewed mapping, not free text.",
+  q:"Who can write to the S3 corpus today, and what review does content pass before it is indexed?"},
+
+ {id:"F-03",sev:1,theme:"Identity",comp:["pathfinder","orch"],
+  t:"No end-user identity propagation, confused deputy",
+  m:"Nothing in the diagram carries the caller's identity to the downstream call. If the orchestrator holds a service account with broad read across eSign, CDS, and CX, then anyone who can phrase a question inherits everything that account can see.",
+  s:"A product owner covering one line of business asks about an envelope belonging to another. The orchestrator's service account can read it, so the answer comes back. Nothing in the chain was designed to say no, and nothing logged that a boundary was crossed.",
+  r:"Token exchange or on-behalf-of flows through every hop. Entitlement enforced at the capability boundary against the end user, not at the prompt layer. Prove this works before building anything that reads live state.",
+  q:"Do eSign, CDS, and CX accept a delegated end-user token today, or only service credentials?"},
+
+ {id:"F-04",sev:1,theme:"Reliability",comp:["pathfinder","obs"],
+  t:"Shares a failure domain with the estate it diagnoses",
+  m:"Pathfinder depends on ServiceNow, Splunk, Dynatrace, and the CC applications. It is intended to help engineers during incidents affecting exactly those systems. The dependency graph guarantees it is least available when it is most needed.",
+  s:"A shared platform degradation takes out Dynatrace ingestion and slows CDS. Engineers open Pathfinder to understand the blast radius. It times out, or worse, returns partial context that reads as complete.",
+  r:"Separate failure domain: independent region or cluster, cached runbook and topology snapshots, degraded mode that clearly announces which sources are unavailable rather than silently omitting them. Prove it with a game day.",
+  q:"What is Pathfinder's availability target, and is it higher than the aggregate of everything it depends on?"},
+
+ {id:"F-05",sev:1,theme:"Ownership",comp:["rule","apps"],
+  t:"Rule agent centralises capability knowledge owned by other teams",
+  m:"The application teams own their runbooks and processes. A central component encoding what those tools can do is a mirror that goes stale the moment it is built. Change velocity from a dozen teams funnels through one component maintained by a team that does not own any of the underlying services.",
+  s:"eSign changes a void precondition in a Tuesday release. Nobody tells the Pathfinder team, because nobody has ever had to. The Rule agent keeps offering the old behaviour for weeks, and the first person to notice is a user whose request fails in a confusing way.",
+  r:"Federate. Each application team publishes and versions its own capability server with its own tools, runbooks, and validation. Pathfinder becomes a supervisor that routes and composes. Ownership follows the team boundary.",
+  q:"Are the application teams willing to own and operate a capability server, and what is the incentive if they are not?"},
+
+ {id:"F-06",sev:1,theme:"Authorization",comp:["rule"],
+  t:"Non-deterministic authorization if the Rule agent is a model",
+  m:"The Rule agent is described as holding the rules for what tools can do. If a language model reasons over those rules, a probabilistic component is deciding what may be invoked. That is unauditable, non-reproducible, and unlikely to survive a control review in a regulated document workflow.",
+  s:"An action is permitted on Monday and refused on Wednesday for the same user and resource. There is no diff to point at, no rule version to cite, and no way to reproduce either decision.",
+  r:"Split the component. Policy decisions go to a deterministic, versioned, testable engine with a decision log. Behavioural knowledge goes to the owning team's capability server. Neither is an agent, and neither should be called one.",
+  q:"Is the Rule agent an inference call or a rules engine? Answer this before the next design session."},
+
+ {id:"F-07",sev:2,theme:"Execution model",comp:["tech","snow"],
+  t:"Incident work forced through a chat turn",
+  m:"A ServiceNow-triggered investigation is a long-running, resumable, auditable job with checkpoints and replay. A chat turn is stateless and ephemeral. Pushing incidents through the chat entry point means no durable state, no resume after failure, and no replayable audit trail.",
+  s:"An investigation runs for four minutes, hits a transient Splunk timeout at step six, and dies. There is no checkpoint to resume from and no record of what steps five and earlier concluded. The engineer starts over, having lost four minutes during an active incident.",
+  r:"Durable workflow engine for the incident path: persisted state, checkpointing, retry with backoff, replay, and a queryable execution history. Chat becomes one view onto the workflow rather than the execution model.",
+  q:"What percentage of incidents would actually benefit from automated investigation, measured against last quarter's incident set?"},
+
+ {id:"F-08",sev:2,theme:"Correctness",comp:["pathfinder","rag"],
+  t:"No verification step and no defined refusal",
+  m:"The diagram is a pipeline, not an agent loop. There is no point where an answer is checked against ground truth and no defined path for insufficient information. A system with no designed refusal is a system that guesses.",
+  s:"Retrieval returns nothing relevant for an onboarding question. The model produces a fluent, plausible, entirely invented set of steps. The user follows them. Nobody discovers the problem until the onboarding fails downstream.",
+  r:"Grounding checks before response: state answers cite tool output only, knowledge answers cite retrieved documents with provenance, and low-confidence retrieval returns an explicit refusal with a route to a human. Design the refusal copy as carefully as the answer copy.",
+  q:"What does Pathfinder say when it does not know, and who wrote that sentence?"},
+
+ {id:"F-09",sev:2,theme:"Evaluation",comp:["pathfinder"],
+  t:"No eval harness, no feedback capture, no regression gates",
+  m:"Without a golden set per intent, online feedback, and gates on prompt, model, and index changes, every deployment is blind. For an engineer-facing tool the downside is incident amplification.",
+  s:"A model version upgrade improves general reasoning and quietly degrades retrieval grounding on the ccintake corpus. Nobody notices for six weeks because the only metric being watched is usage.",
+  r:"Golden set per intent before the first release. Offline regression gates in the pipeline. Online thumbs and resolution feedback wired to the trace store. A published accuracy bar below which serving stops.",
+  q:"Who owns the golden set, and how does a production miss become a test case?"},
+
+ {id:"F-10",sev:2,theme:"Knowledge",comp:["kb","rag"],
+  t:"One dashed box hides four corpora with four owners",
+  m:"Prod support, FAQs, onboarding, and the general knowledge base have different owners, update rhythms, decay rates, and sensitivity. Drawn as one store, they get one indexing strategy, one refresh cadence, and one access model, which will be wrong for at least three of them.",
+  s:"An onboarding document is superseded but not removed. It remains indexed and keeps ranking well because it is well written. Answers cite it confidently for months.",
+  r:"Per-corpus ownership, freshness SLO, review cadence, tombstoning for deprecated content, document-level ACLs, and last-verified metadata surfaced in every citation. Separate indexes where sensitivity differs.",
+  q:"For each of the four corpora, who is the named owner and what is the acceptable staleness?"},
+
+ {id:"F-11",sev:2,theme:"Action safety",comp:["orch","apps"],
+  t:"Write path undefined",
+  m:"The diagram does not say whether the orchestrator can act or only read. If it can act, the entire control set is missing: dry run, idempotency, approval gates, rate limits, circuit breakers, kill switch, rollback.",
+  s:"A retry on a timed-out call re-issues a non-idempotent action. The first call had actually succeeded. Two envelopes are voided and the reconciliation happens in a change record nobody can explain.",
+  r:"Answer the read-or-write question in writing first. If write: dry-run default, idempotency keys on every capability, approval obligations from policy, per-capability circuit breakers, and a kill switch reachable by on-call in under a minute.",
+  q:"Does the Service Orchestrator ever mutate state? This is the highest-leverage unanswered question in the design."},
+
+ {id:"F-12",sev:2,theme:"Data scope",comp:["orch","rag"],
+  t:"Post-retrieval filtering leaks through synthesis",
+  m:"Filtering results after retrieval is not filtering. By the time rows or documents are in the model's context, they can influence the answer even if they are stripped from the response payload.",
+  s:"A broad query returns fifty envelopes, forty of which the user may not see. The response lists ten, but the summary line says the user's portfolio contains fifty items, which is itself disclosure.",
+  r:"Scope at query time. Policy returns a filter predicate and the capability server applies it in the query, so out-of-scope data never enters context.",
+  q:"Can each downstream API accept a scoping predicate, or does it only support fetch-then-filter?"},
+
+ {id:"F-13",sev:3,theme:"Observability",comp:["pathfinder","obs"],
+  t:"No observability of the agent itself",
+  m:"The system queries Splunk and Dynatrace about other systems. Nothing traces Pathfinder: span-level tool traces, retrieval hit quality, token cost per intent, latency decomposition, per-intent success rate. You would be operating a system whose behaviour you cannot explain after the fact.",
+  s:"Latency doubles over a fortnight. Without decomposition you cannot tell whether the cause is retrieval, a downstream API, model inference, or an extra planning hop that a prompt change introduced.",
+  r:"OpenTelemetry spans across every hop with a trace id that joins to the policy decision log and an evaluation store holding inputs, retrieved context, tool calls, outputs, and scores.",
+  q:"Where do agent traces live, and are they queryable alongside the existing platform telemetry?"},
+
+ {id:"F-14",sev:3,theme:"Performance",comp:["pathfinder"],
+  t:"No latency or cost budget",
+  m:"Chat needs to feel alive under about three seconds. A router hop plus retrieval plus tool fan-out plus synthesis lands at ten to thirty seconds without deliberate engineering. No streaming is shown and no budget is stated.",
+  s:"The first demo is impressive and slow. Adoption stalls because engineers can open Splunk faster than they can wait for an answer, and the tool quietly becomes the thing nobody opens.",
+  r:"Per-intent latency budgets with streaming responses, parallel tool calls where safe, aggressive caching of stable lookups, and a fast path that skips retrieval entirely for classified state questions.",
+  q:"What is the acceptable p95 for each of the three tiers, agreed with the users rather than assumed?"},
+
+ {id:"F-15",sev:3,theme:"State",comp:["pathfinder"],
+  t:"No session state or episodic memory",
+  m:"Multi-turn triage requires conversation state. Cross-incident learning requires episodic memory. Neither appears in the diagram, so every turn starts cold and every incident repeats the last one's discovery work.",
+  s:"An engineer narrows a problem over five turns, then asks a follow-up that requires the second turn's finding. The system has forgotten it and asks them to restate the whole context.",
+  r:"Explicit session state with a defined retention and scope, plus a separate decision about whether resolved-incident summaries feed a durable store. Treat that second one as a data-governance question, not a feature.",
+  q:"How long does session context live, and who can see it?"},
+
+ {id:"F-16",sev:3,theme:"Scope",comp:["users"],
+  t:"Unbounded scope means unbounded evaluation surface",
+  m:"A one-stop solution for all document-related needs has no boundary, so there is no finite set of intents to test and no definition of correct coverage. Every new question type silently expands the surface you are accountable for.",
+  s:"Six months in, nobody can say whether the system is good, because good was never defined against a bounded intent set. Stakeholders judge it on their last bad answer.",
+  r:"Publish a supported intent list. Everything outside it routes to a human with a clear message. Expand the list deliberately, with evaluation coverage as the entry condition.",
+  q:"What is version one's supported intent list, and what is the refusal path for everything else?"},
+
+ {id:"F-17",sev:2,theme:"Integration",comp:["snow"],
+  t:"ServiceNow write-back semantics undefined",
+  m:"The incident arrow is drawn inbound only. Whether Pathfinder annotates, updates, or resolves incidents is unspecified, and each option carries a different control requirement and a different audit story.",
+  s:"An automated annotation is misread as a human finding during a bridge call. Two engineers pursue it for twenty minutes because nothing marked it as machine-generated.",
+  r:"Decide the write-back scope explicitly. Whatever it writes must be unmistakably attributed to the agent, carry the trace id, and be reversible.",
+  q:"May Pathfinder write to an incident record, and if so, under whose identity?"},
+
+ {id:"F-18",sev:3,theme:"Integration",comp:["obs"],
+  t:"Telemetry query pattern, cost, and rate limits unspecified",
+  m:"Whether Pathfinder queries Splunk and Dynatrace on demand per question or consumes a pre-aggregated stream changes cost, latency, and the load it places on shared platforms during exactly the periods those platforms are already stressed.",
+  s:"A busy incident produces forty questions in ten minutes. Each fans out to several searches. The agent becomes a meaningful additional load on the observability platform during a live incident.",
+  r:"Pre-aggregate what can be pre-aggregated, cache aggressively, rate-limit per session, and agree a query budget with the platform owners before go-live.",
+  q:"What load will this add to Splunk and Dynatrace at peak, and have their owners seen the number?"},
+
+ {id:"F-19",sev:2,theme:"Disclosure",comp:["orch","rule"],
+  t:"Denial messages leak existence and ownership",
+  m:"A helpful refusal is often a disclosure. Telling a user that a record exists but belongs to a client they do not cover confirms both the record and the relationship.",
+  s:"A user probes for envelope identifiers. Every not-permitted response confirms a real identifier and hints at ownership, which is enumeration by another name.",
+  r:"Policy classifies its own reason codes and can mandate a not-found response where existence itself is sensitive. Refusal copy is reviewed as a disclosure surface, not as user experience polish.",
+  q:"For each resource type, is existence itself confidential?"},
+
+ {id:"F-20",sev:3,theme:"Change management",comp:["pathfinder","kb"],
+  t:"No versioning or rollback story for prompts, models, and indexes",
+  m:"Behaviour is determined by prompts, model versions, retrieval indexes, and policy bundles. If those are not versioned artefacts with a rollback path, you cannot reproduce a past decision or revert a bad change safely.",
+  s:"Answer quality degrades after a Thursday change. Three things changed that week and none of them are versioned together, so the only remediation is to guess and redeploy.",
+  r:"Treat prompt, model pin, index snapshot, and policy bundle as one versioned release unit with the same rollback discipline as application code. Record the version tuple on every response.",
+  q:"Can you reproduce the exact behaviour of a response from three months ago?"}
+];
+
+const CUR = {
+ users:{n:"Users / POs",k:"Chat entry point for business consumers",p:["This entry point carries the lowest-risk, highest-volume traffic in the system: FAQs, onboarding guidance, ccintake questions. It is also the traffic most tolerant of latency and most tolerant of an honest 'I don't know'.","The problem is not this path. The problem is that it terminates in the same component as the engineer path, which means the controls needed for the engineer path are imposed here and the exposure available here reaches there."]},
+ tech:{n:"Tech",k:"Engineer entry point, chat plus incidents",p:["Two entry modes are collapsed into one: an interactive chat turn and an asynchronous incident trigger. They have incompatible execution models. One is stateless and expects an answer in seconds; the other is long-running, needs checkpoints, and must be replayable months later for audit.","This is also the path with the highest privilege requirements, which is why it should not share an identity or a deployment with the consumer path."]},
+ pathfinder:{n:"CC Pathfinder",k:"Central component, role undefined",p:["The single most important unanswered question in the diagram: is this a planner making model calls, or a thin gateway with the intelligence in the agents below? The answer determines where non-determinism lives, where cost accrues, and what you have to trace.","As drawn it is a single point of failure, a single identity, a single deployment, and a single blast radius for three different risk profiles. It also depends on the systems it is meant to help diagnose."]},
+ snow:{n:"ServiceNow",k:"Incident source, write-back undefined",p:["Drawn as inbound incident data only. Whether Pathfinder annotates, updates, or resolves records is unspecified, and each choice carries a different control and audit requirement.","Incident text is unstructured human writing produced under time pressure. Treating it as reliable structured input to an automated investigation is optimistic; treating it as an instruction source is unsafe."]},
+ obs:{n:"Splunk and Dynatrace",k:"Telemetry sources",p:["Query pattern is unspecified: on demand per question, or a pre-aggregated stream. That choice determines cost, latency, and how much additional load the agent places on shared observability platforms during exactly the periods they are already stressed.","These are also dependencies that fail during the incidents Pathfinder exists to help with, which is the failure-domain problem in its clearest form."]},
+ kb:{n:"S3 corpus",k:"Four corpora drawn as one store",p:["Prod support, FAQs, ccintake onboarding, and the knowledge base have different owners, update rhythms, decay rates, and sensitivities. One dashed box gets one indexing strategy and one access model, which will be wrong for most of them.","Nothing here specifies the vector index, reindex cadence, document-level ACLs, tombstoning of superseded content, or provenance metadata. A stale runbook served confidently during an incident is worse than no tool at all."]},
+ rag:{n:"RAG agent",k:"Retrieval over the document corpus",p:["Reasonable as a component. Dangerous in its position. The outgoing edge into the Rule agent means retrieved text can influence which capability is invoked, which turns every document in the corpus into a potential instruction.","Retrieval also needs a defined behaviour when it finds nothing relevant. Without that, low-confidence retrieval produces high-confidence invention."]},
+ rule:{n:"Rule agent",k:"Central capability knowledge, ownership mismatch",p:["This is the biggest structural problem in the design. It encodes what every application's tools can do, while those applications own their own runbooks. The mirror goes stale immediately and the staleness is invisible until something fails oddly.","It also fuses two things that must stay separate: policy, which is deterministic and central, and capability, which is behavioural and federated. Split it into a policy engine and per-team capability servers."]},
+ orch:{n:"Service orchestrator",k:"Fan-out to downstream applications",p:["Whether this component can write is the highest-leverage unanswered question in the design. Read-only makes it a query federation layer. Write makes it a production actor requiring an entire control set that is absent from the diagram.","It is also where the confused-deputy problem lands. If it holds a broad service account, every entitlement boundary above it is decorative."]},
+ apps:{n:"eSign, CDS, CX, other CC apps",k:"Downstream systems owned by application teams",p:["These teams own the operational reality: the runbooks, the preconditions, the failure modes, the on-call. That ownership is the argument for federation. Each should publish its own capability contract rather than being described by a central component.","This also solves onboarding for new applications: publishing a conforming capability server becomes the integration, rather than a change request against someone else's Rule agent."]}
+};
+
+const TGT = {
+ tchat:{n:"Chat clients",k:"Interactive entry",p:["Serves knowledge and state questions with a sub-three-second expectation. Carries the end user's identity into every downstream hop.","Deliberately does not serve the operate tier. Engineers reach write capabilities through an approval-gated workflow surface, not a chat box."]},
+ tinc:{n:"Incident triggers",k:"Asynchronous entry",p:["ServiceNow events start a durable workflow with persisted state, checkpoints, retry, and replay. Chat becomes one view onto that workflow rather than its execution model.","Every step is attributable and reproducible months later, which is what makes the operate tier defensible in a control review."]},
+ tsup:{n:"Pathfinder supervisor",k:"Routes, does not know everything",p:["Owns identity verification, intent classification, tier routing, input and output guardrails, and response composition.","Does not own capability knowledge, does not own authorization, does not own domain rules. It composes; it does not decide what is permitted. Keeping this component thin is what prevents the Rule agent monolith from reassembling itself."]},
+ tk:{n:"Knowledge tier",k:"Read documents, lowest risk",p:["Retrieval over the curated knowledge base with citations and provenance. No tool access whatsoever, which is what makes it safe to ship first and cheap to iterate on.","Its defined failure is a refusal. Low-confidence retrieval says so and routes to a human rather than composing something plausible."]},
+ ts:{n:"State tier",k:"Read live state, entitlement-scoped",p:["Deterministic capability calls with the end user's identity propagated, scoped by a policy-returned filter applied at query time.","Answers here are grounded strictly in tool output. Retrieved document text never enters a state answer, because a state answer that is partly recalled from documentation is a wrong answer wearing the right clothes."]},
+ to:{n:"Operate tier",k:"Write actions, highest risk",p:["Durable workflow execution with dry-run by default, idempotency keys, policy-issued approval obligations, per-capability circuit breakers, and a kill switch reachable in under a minute.","Separate deployment, separate credentials, separate failure domain from the estate it acts on. Ships last, and possibly never as a conversational surface."]},
+ tkb:{n:"Curated knowledge base",k:"Owned, versioned, access-controlled",p:["Per-corpus ownership with a named accountable owner, a freshness SLO, a review cadence, and tombstoning for superseded content.","Document-level access control and last-verified metadata surfaced in every citation, so a reader can judge the age of what they are being told."]},
+ tcap:{n:"Capability servers",k:"Federated, application-team owned",p:["Each team publishes capability ids, tiers, schemas, idempotency semantics, dry-run support, error taxonomy, and on-call ownership. Model Context Protocol per domain is the natural fit today.","Domain validation lives here, not in a central component. The capability server answers whether an action is valid; the policy engine answers whether the caller may attempt it. Both can refuse, for different reasons, fixed by different teams."]},
+ tpol:{n:"Policy engine",k:"Deterministic authorization",p:["Owns the permit or deny decision, risk-tier registration, obligations, data-scoping predicates, approval and break-glass rules, deny-by-default, and the versioned decision log.","Must not own business rules, tool selection, or prompt guardrails, and must never take an input that a model or a document can influence. See the policy engine section for the full contract."]},
+ ttrace:{n:"Trace and eval store",k:"How you know it works",p:["Span-level traces across every hop joined to policy decisions, plus retrieved context, tool calls, outputs, costs, and evaluation scores.","This is what makes the system operable and auditable. It is also the artefact that turns a production miss into a regression test, which is the only mechanism by which accuracy improves over time rather than drifting."]}
+};
+
+const DEC = [
+ ["D-01","Does the Service Orchestrator ever write?","Read-only makes this a query layer. Write makes it a production actor needing an entire control set. Answer in writing."],
+ ["D-02","What is the intent inventory, and what share needs dynamic planning?","If under twenty percent, most of this should be a deterministic workflow with a model at the edges."],
+ ["D-03","Is the Rule agent a model or a rules engine?","Determines whether authorization is deterministic. Name the component correctly once decided."],
+ ["D-04","Can an end-user identity reach eSign, CDS, and CX today?","Gate on the entire state tier. Prove with a working trace before building."],
+ ["D-05","Who owns the freshness SLO for each of the four corpora?","Unowned content goes stale, and stale-but-confident is how this class of system loses trust permanently."],
+ ["D-06","What does Pathfinder say when it does not know?","If the refusal is not designed, the system guesses. Write the sentence."],
+ ["D-07","What is Pathfinder's availability target relative to the estate?","It must exceed the aggregate of its dependencies or it will be absent during incidents."],
+ ["D-08","Who authors policy: central, federated, or two-layer?","Central creates a bottleneck. Federated erodes guardrails. Two-layer is the workable answer but needs an owner."],
+ ["D-09","What is the golden set, and who curates it?","Without it, every model, prompt, and index change is a blind deploy."],
+ ["D-10","What happens to an in-flight agent action during a change freeze or Sev-1?","Needs an answer before the first write capability exists, not after the first finding."]
+];
+
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const SEVN = {1:"Blocking",2:"Pre-production",3:"Pre-scale"};
+
+const fWrap = document.getElementById('findings');
+fWrap.innerHTML = F.map(f => `
+<article class="finding" data-sev="${f.sev}" id="${f.id}">
+  <button aria-expanded="false">
+    <span class="fid">${f.id}</span>
+    <span class="ftitle">${esc(f.t)}<span class="ftheme">Severity ${f.sev} · ${SEVN[f.sev]} · ${esc(f.theme)}</span></span>
+    <span class="caret" aria-hidden="true">&#9656;</span>
+  </button>
+  <div class="fbody">
+    <dl>
+      <dt>Why it matters</dt><dd>${esc(f.m)}</dd>
+      <dt>Failure scenario</dt><dd class="scen">${esc(f.s)}</dd>
+      <dt>Remediation</dt><dd>${esc(f.r)}</dd>
+      <dt>Question to answer</dt><dd><b>${esc(f.q)}</b></dd>
+    </dl>
+  </div>
+</article>`).join('');
+
+fWrap.addEventListener('click', e => {
+  const b = e.target.closest('.finding > button'); if (!b) return;
+  const a = b.parentElement, open = a.classList.toggle('open');
+  b.setAttribute('aria-expanded', open);
+});
+
+let sev = 'all';
+function applyFilter(){
+  let n = 0;
+  document.querySelectorAll('.finding').forEach(a => {
+    const show = sev === 'all' || a.dataset.sev === sev;
+    a.style.display = show ? '' : 'none'; if (show) n++;
+  });
+  document.getElementById('fcount').textContent = n + (n === 1 ? ' finding' : ' findings') + ' shown';
+}
+document.querySelectorAll('button.f[data-sev]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    sev = btn.dataset.sev;
+    document.querySelectorAll('button.f[data-sev]').forEach(o => o.setAttribute('aria-pressed', o === btn));
+    applyFilter();
+  });
+});
+const exBtn = document.getElementById('expand');
+exBtn.addEventListener('click', () => {
+  const opening = exBtn.textContent === 'Expand all';
+  document.querySelectorAll('.finding').forEach(a => {
+    a.classList.toggle('open', opening);
+    a.querySelector('button').setAttribute('aria-expanded', opening);
+  });
+  exBtn.textContent = opening ? 'Collapse all' : 'Expand all';
+});
+applyFilter();
+
+function render(panel, data, key, withFindings){
+  const d = data[key]; if (!d) return;
+  let html = `<h3>${esc(d.n)}</h3><div class="kicker">${esc(d.k)}</div>` + d.p.map(x => `<p>${esc(x)}</p>`).join('');
+  if (withFindings){
+    const rel = F.filter(f => f.comp.includes(key));
+    if (rel.length){
+      html += `<h4 style="margin-top:16px">Findings on this component</h4><div class="chips">` +
+        rel.map(f => `<button class="chip" data-go="${f.id}"><b>${f.id}</b> ${esc(f.t)}</button>`).join('') + `</div>`;
+    }
+  }
+  panel.className = 'detail'; panel.innerHTML = html;
+}
+
+function wire(svgSel, panelId, data, withFindings){
+  const panel = document.getElementById(panelId);
+  document.querySelectorAll(svgSel + ' g.hit').forEach(g => {
+    const act = () => {
+      document.querySelectorAll(svgSel + ' g.hit').forEach(o => o.classList.remove('sel'));
+      g.classList.add('sel');
+      render(panel, data, g.dataset.k, withFindings);
+    };
+    g.addEventListener('click', act);
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
+  });
+  panel.addEventListener('click', e => {
+    const c = e.target.closest('[data-go]'); if (!c) return;
+    const a = document.getElementById(c.dataset.go);
+    sev = 'all';
+    document.querySelectorAll('button.f[data-sev]').forEach(o => o.setAttribute('aria-pressed', o.dataset.sev === 'all'));
+    applyFilter();
+    a.classList.add('open');
+    a.querySelector('button').setAttribute('aria-expanded', true);
+    a.scrollIntoView({block:'center'});
+  });
+}
+wire('#s3', 'd-cur', CUR, true);
+wire('#s5', 'd-tgt', TGT, false);
+
+const dw = document.getElementById('decisions');
+dw.innerHTML = DEC.map(([id, t, s]) => `
+<label><input type="checkbox"><span class="did">${id}</span><span class="dtxt"><b>${esc(t)}</b><span>${esc(s)}</span></span></label>`).join('');
+function prog(){
+  const all = dw.querySelectorAll('input'), done = dw.querySelectorAll('input:checked').length;
+  document.getElementById('dprog').textContent = done + ' of ' + all.length + ' settled. Unticked items are architecture risk, not backlog.';
+}
+dw.addEventListener('change', prog); prog();
+
+const links = [...document.querySelectorAll('nav.toc a')];
+const obs = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting) links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id)); });
+}, {rootMargin:'-10% 0px -75% 0px'});
+document.querySelectorAll('main section').forEach(s => obs.observe(s));
+</script>
