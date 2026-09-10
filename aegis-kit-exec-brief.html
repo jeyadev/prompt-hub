@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AEGIS Kit — management brief</title>
+<style>
+  :root{
+    --paper:#EDEEEA;
+    --ink:#17202A;
+    --ink-70:#4A5762;
+    --ink-40:#8A949B;
+    --rule:#C9CEC9;
+    --gate:#8C3A2B;
+    --go:#2F5D50;
+    --serif: "Charter","Iowan Old Style","Palatino Linotype","Palatino",Georgia,serif;
+    --sans: "Inter",system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:#20262B;
+    color:var(--ink);
+    font-family:var(--sans);
+    display:flex;align-items:center;justify-content:center;
+    -webkit-font-smoothing:antialiased;
+  }
+  .stage{
+    position:relative;
+    width:min(100vw, calc(100vh * 16 / 9));
+    aspect-ratio:16/9;
+    container-type:inline-size;
+    background:var(--paper);
+    overflow:hidden;
+  }
+  .slide{
+    container-type:inline-size;
+    position:absolute;inset:0;
+    display:none;
+    padding:5.2cqi 6cqi 0 8.6cqi;
+  }
+  .slide.on{display:block}
+
+  /* index rail */
+  .rail{
+    position:absolute;left:3.2cqi;top:5.2cqi;bottom:5.6cqi;
+    width:2.4cqi;
+    border-left:1px solid var(--rule);
+    padding-left:0.9cqi;
+    display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .rail b{display:block;font-family:var(--serif);font-size:2.4cqi;font-weight:500;line-height:1;color:var(--ink)}
+  .rail span{display:block;font-size:1cqi;color:var(--ink-40);letter-spacing:.02em;margin-top:0.35cqi}
+  .rail .vert{
+    writing-mode:vertical-rl;font-size:1.05cqi;color:var(--ink-70);
+    letter-spacing:.06em;
+  }
+
+  h1{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:4.3cqi;
+    line-height:1.06;
+    letter-spacing:-0.01em;
+    margin:0 0 2.4cqi 0;
+    max-width:34ch;
+  }
+  .hr{height:1px;background:var(--rule);margin:0 0 2.6cqi 0}
+  p{margin:0 0 1.1cqi 0;font-size:1.62cqi;line-height:1.5;color:var(--ink-70);max-width:52ch}
+  .lead{color:var(--ink);font-size:1.78cqi}
+
+  .cols{display:grid;gap:4cqi}
+  .c-2{grid-template-columns:1fr 1.25fr}
+  .c-3{grid-template-columns:repeat(3,1fr)}
+
+  .figs{display:flex;flex-direction:column;gap:1.5cqi}
+  .fig{border-top:1px solid var(--rule);padding-top:0.9cqi}
+  .fig b{display:block;font-family:var(--serif);font-size:3.6cqi;font-weight:500;line-height:1;font-variant-numeric:tabular-nums}
+  .fig span{display:block;font-size:1.35cqi;color:var(--ink-70);margin-top:0.5cqi;max-width:26ch}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:3cqi;margin-top:0.6cqi}
+  .step{border-top:2px solid var(--ink);padding-top:1cqi}
+  .step em{font-style:normal;font-family:var(--serif);font-size:1.5cqi;color:var(--ink-40)}
+  .step h3{font-size:1.85cqi;margin:0.4cqi 0 0.7cqi;font-weight:600;letter-spacing:-0.01em}
+  .step p{font-size:1.45cqi;max-width:30ch;margin:0}
+
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:4.4cqi}
+  .pair h3{font-size:2cqi;margin:0 0 0.9cqi;font-weight:600;letter-spacing:-0.01em}
+  .pair .tag{font-size:1.25cqi;color:var(--ink-40);margin:0 0 0.5cqi}
+  .pair p{font-size:1.5cqi;max-width:34ch}
+  .mark{border-left:2px solid var(--gate);padding-left:1.2cqi}
+  .mark.ok{border-left-color:var(--go)}
+
+  table{border-collapse:collapse;width:100%;font-size:1.4cqi}
+  th,td{text-align:left;padding:0.85cqi 0.8cqi 0.85cqi 0;border-bottom:1px solid var(--rule);vertical-align:top;color:var(--ink-70)}
+  th{font-weight:600;color:var(--ink);font-size:1.3cqi;border-bottom-color:var(--ink)}
+  td:first-child{color:var(--ink);font-weight:500;width:34%}
+
+  ol.ask{margin:0;padding-left:1.6cqi;font-size:1.5cqi;color:var(--ink);line-height:1.45}
+  ol.ask li{margin-bottom:0.9cqi}
+  ol.ask li span{color:var(--ink-70)}
+
+  .sowhat{
+    position:absolute;left:8.6cqi;right:6cqi;bottom:4.4cqi;
+    border-top:1px solid var(--ink);
+    padding-top:1cqi;
+    font-family:var(--serif);
+    font-size:1.9cqi;line-height:1.3;
+    max-width:76ch;
+  }
+
+  .slide.diagram{padding-top:3.4cqi}
+  .slide.diagram h1{font-size:3.4cqi;margin-bottom:1.5cqi;max-width:40ch}
+  .slide.diagram .hr{margin-bottom:1.8cqi}
+  figure{margin:0}
+  figcaption{font-size:1.25cqi;color:var(--ink-40);margin-top:0.8cqi}
+  svg{display:block;width:100%;height:auto}
+
+  /* nav */
+  .nav{
+    position:absolute;right:2.4cqi;bottom:1.6cqi;
+    display:flex;gap:0.8cqi;align-items:center;z-index:5;
+  }
+  .nav button{
+    font:inherit;font-size:1.3cqi;line-height:1;
+    background:transparent;border:1px solid var(--rule);color:var(--ink-70);
+    padding:0.55cqi 1cqi;cursor:pointer;border-radius:2px;
+  }
+  .nav button:hover{border-color:var(--ink);color:var(--ink)}
+  .nav button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+  @media print{
+    body{background:#fff;display:block}
+    .stage{width:100%;height:auto;aspect-ratio:auto}
+    .slide{display:block;position:relative;page-break-after:always;height:19cm;padding:2cm 2cm 0 3cm}
+    .nav{display:none}
+    @page{size:A4 landscape;margin:0}
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+<!-- ───────────────────────── 1 ───────────────────────── -->
+<section class="slide on">
+  <div class="rail"><div><b>1</b><span>of 5</span></div><div class="vert">Where we are</div></div>
+  <h1>Thirty squads run systems that ten SRE people actually understand</h1>
+  <div class="hr"></div>
+  <div class="cols c-2">
+    <div class="figs">
+      <div class="fig"><b>12</b><span>critical shared services</span></div>
+      <div class="fig"><b>100+</b><span>APIs consumed by IPB, PBA and GVA tenants</span></div>
+      <div class="fig"><b>30+</b><span>engineering squads building against them</span></div>
+    </div>
+    <div>
+      <p class="lead">Every squad already has an AI agent in their IDE. What none of them have is the operational context that makes it useful — what a service depends on, what breaks it, what the last five incidents taught us, and what they are allowed to touch.</p>
+      <p>So the agent writes confident code against a system it cannot see, the defect surfaces in production, and the escalation lands on the same on-call rota it always did. Adoption of the tool went up. Toil did not go down.</p>
+    </div>
+  </div>
+  <div class="sowhat">The constraint is not tooling. It is context — and context does not scale by hiring.</div>
+</section>
+
+<!-- ───────────────────────── 2 ───────────────────────── -->
+<section class="slide">
+  <div class="rail"><div><b>2</b><span>of 5</span></div><div class="vert">The move</div></div>
+  <h1>Ship the context, not another tool</h1>
+  <div class="hr"></div>
+  <p class="lead" style="max-width:64ch;margin-bottom:2.6cqi">The kit is a repository, not a product. Operational knowledge is written once, reviewed like code, and rendered into whatever agent the engineer is already running.</p>
+  <div class="steps">
+    <div class="step">
+      <em>One</em>
+      <h3>Canonical layer</h3>
+      <p>AGENTS.md plus a skill per operational task. Single source of truth, versioned, pull-requested.</p>
+    </div>
+    <div class="step">
+      <em>Two</em>
+      <h3>Generated adapters</h3>
+      <p>Each surface gets a thin generated adapter. Nobody hand-maintains a second copy of the rules.</p>
+    </div>
+    <div class="step">
+      <em>Three</em>
+      <h3>Existing surfaces</h3>
+      <p>Cline today, Copilot when Cline reaches end of life. Same content — only the adapter changes.</p>
+    </div>
+  </div>
+  <div class="sowhat">Nothing to procure, nothing to migrate, and exactly one place to fix a wrong answer.</div>
+</section>
+
+<!-- ───────────────────────── 3 ───────────────────────── -->
+<section class="slide diagram">
+  <div class="rail"><div><b>3</b><span>of 5</span></div><div class="vert">How it is built</div></div>
+  <h1>One source of truth, two guarded paths out</h1>
+  <div class="hr"></div>
+  <figure>
+    <!-- ARCH_DIAGRAM_START — regenerate with prompts/arch-slide.md. Replace only between these markers. -->
+    <svg viewBox="0 0 1000 460" role="img" aria-label="The kit repository renders adapters into the engineer's IDE agent, which reads from systems of record through MCP servers while write operations are denied at a gate; telemetry emits non-attributable counts to a squad-level store.">
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#4A5762"/>
+        </marker>
+        <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#2F5D50"/>
+        </marker>
+      </defs>
+      <g font-family="Inter, system-ui, sans-serif" fill="#17202A">
+
+        <!-- band 1 : kit repository -->
+        <rect x="8" y="20" width="262" height="250" fill="none" stroke="#17202A" stroke-width="1.5"/>
+        <text x="28" y="52" font-size="17" font-weight="600">Kit repository</text>
+        <text x="28" y="74" font-size="13" fill="#8A949B">reviewed, versioned, owned by SRE</text>
+        <rect x="28" y="92" width="222" height="56" fill="#E2E5E0"/>
+        <text x="42" y="116" font-size="15" font-weight="600">AGENTS.md</text>
+        <text x="42" y="136" font-size="11.5" fill="#4A5762">service map · invariants · limits</text>
+        <rect x="28" y="162" width="222" height="56" fill="#E2E5E0"/>
+        <text x="42" y="186" font-size="15" font-weight="600">skills/*/SKILL.md</text>
+        <text x="42" y="206" font-size="11.5" fill="#4A5762">triage · change · evidence</text>
+        <text x="28" y="248" font-size="11.5" fill="#8A949B">adapters generated, not hand-edited</text>
+
+        <line x1="272" y1="145" x2="342" y2="145" stroke="#4A5762" stroke-width="1.5" marker-end="url(#a)"/>
+        <text x="284" y="132" font-size="12.5" fill="#4A5762">render</text>
+
+        <!-- band 2 : surfaces -->
+        <rect x="346" y="20" width="262" height="250" fill="none" stroke="#17202A" stroke-width="1.5"/>
+        <text x="366" y="52" font-size="17" font-weight="600">Engineer&#39;s IDE agent</text>
+        <text x="366" y="74" font-size="13" fill="#8A949B">no new tool, no new workflow</text>
+        <rect x="366" y="92" width="222" height="52" fill="none" stroke="#C9CEC9"/>
+        <text x="380" y="124" font-size="15">Cline adapter <tspan fill="#8A949B">· today</tspan></text>
+        <rect x="366" y="158" width="222" height="52" fill="none" stroke="#C9CEC9"/>
+        <text x="380" y="190" font-size="15">Copilot adapter <tspan fill="#8A949B">· next</tspan></text>
+        <text x="366" y="248" font-size="12.5" fill="#8A949B">same context on both surfaces</text>
+
+        <!-- read path -->
+        <line x1="610" y1="118" x2="716" y2="118" stroke="#2F5D50" stroke-width="1.8" marker-end="url(#ag)"/>
+        <text x="622" y="107" font-size="12.5" fill="#2F5D50">read</text>
+
+        <!-- write path, terminated at the gate -->
+        <line x1="610" y1="196" x2="678" y2="196" stroke="#8C3A2B" stroke-width="1.8"/>
+        <line x1="688" y1="174" x2="688" y2="218" stroke="#8C3A2B" stroke-width="3.5"/>
+        <line x1="678" y1="186" x2="698" y2="206" stroke="#8C3A2B" stroke-width="1.6"/>
+        <text x="618" y="185" font-size="12.5" fill="#8C3A2B">write</text>
+        <text x="606" y="240" font-size="11.5" fill="#8C3A2B">denied at the gate</text>
+
+        <!-- band 3 : systems of record -->
+        <rect x="720" y="20" width="272" height="250" fill="none" stroke="#17202A" stroke-width="1.5"/>
+        <text x="740" y="52" font-size="17" font-weight="600">Systems of record</text>
+        <text x="740" y="74" font-size="13" fill="#8A949B">read-only, through MCP servers</text>
+        <text x="740" y="110" font-size="15">Splunk · Dynatrace</text>
+        <text x="740" y="140" font-size="15">ServiceNow · Jira</text>
+        <text x="740" y="170" font-size="15">Confluence runbooks</text>
+        <text x="740" y="200" font-size="15">Pithos domain knowledge</text>
+        <text x="740" y="248" font-size="12.5" fill="#8A949B">evidence, not recollection</text>
+
+        <!-- telemetry rail -->
+        <line x1="8" y1="322" x2="992" y2="322" stroke="#C9CEC9" stroke-width="1"/>
+        <text x="8" y="356" font-size="16" font-weight="600">Telemetry</text>
+        <text x="8" y="378" font-size="12.5" fill="#8A949B">work item as correlation ID</text>
+        <rect x="346" y="336" width="262" height="62" fill="#E2E5E0"/>
+        <text x="366" y="362" font-size="13.5">counts · durations · hashes · enums</text>
+        <text x="366" y="384" font-size="11.5" fill="#4A5762">no code, prompts or logs leave the laptop</text>
+        <line x1="610" y1="367" x2="716" y2="367" stroke="#4A5762" stroke-width="1.5" marker-end="url(#a)"/>
+        <text x="622" y="356" font-size="12.5" fill="#4A5762">emit</text>
+        <rect x="720" y="336" width="272" height="62" fill="none" stroke="#C9CEC9"/>
+        <text x="740" y="362" font-size="14">Squad-level aggregate store</text>
+        <text x="740" y="384" font-size="12.5" fill="#4A5762">pseudonymous, no mapping retained</text>
+      </g>
+    </svg>
+    <!-- ARCH_DIAGRAM_END -->
+    <figcaption>Read paths carry evidence into the session. Write paths stop before the model is ever consulted.</figcaption>
+  </figure>
+</section>
+
+<!-- ───────────────────────── 4 ───────────────────────── -->
+<section class="slide">
+  <div class="rail"><div><b>4</b><span>of 5</span></div><div class="vert">Why it is safe here</div></div>
+  <h1>Two properties, both structural rather than promised</h1>
+  <div class="hr"></div>
+  <div class="pair">
+    <div class="mark">
+      <p class="tag">Blast radius</p>
+      <h3>The agent cannot write to production</h3>
+      <p>Write-capable operations are blocked by the platform's deny hook before the request reaches the model. Not a policy the model is asked to respect, and not a setting an engineer can toggle mid-session.</p>
+      <p>If the deny hook is missing, the session does not start.</p>
+    </div>
+    <div class="mark ok">
+      <p class="tag">People risk</p>
+      <h3>Individual performance cannot be reconstructed</h3>
+      <p>The kit emits counts, durations, hashes and categorical values against a stable pseudonym, with no mapping retained anywhere. Any engineer can inspect the exact payload before it leaves.</p>
+      <p>The measurement design was built for squads, so squad is the smallest unit that exists.</p>
+    </div>
+  </div>
+  <div class="sowhat">Asked whether we can see one engineer's numbers, the honest answer is that the system cannot produce them.</div>
+</section>
+
+<!-- ───────────────────────── 5 ───────────────────────── -->
+<section class="slide">
+  <div class="rail"><div><b>5</b><span>of 5</span></div><div class="vert">What we are asking</div></div>
+  <h1>Prove it against a control group, not a testimonial</h1>
+  <div class="hr"></div>
+  <div class="cols c-2">
+    <div>
+      <svg viewBox="0 0 380 150" role="img" aria-label="Stepped wedge rollout: four waves of squads switch from control to treatment at weeks one, four, seven and ten across a twelve week window.">
+        <g font-family="Inter, system-ui, sans-serif">
+          <text x="0" y="12" font-size="11" fill="#8A949B">weeks 1–12, squads randomised into four waves</text>
+          <g>
+            <text x="0" y="42" font-size="11" fill="#4A5762">A</text>
+            <text x="0" y="70" font-size="11" fill="#4A5762">B</text>
+            <text x="0" y="98" font-size="11" fill="#4A5762">C</text>
+            <text x="0" y="126" font-size="11" fill="#4A5762">D</text>
+          </g>
+          <g id="wedge"></g>
+        </g>
+      </svg>
+      <p style="font-size:1.3cqi;margin-top:1cqi">Each squad is its own pre-period control. Nobody is denied the kit permanently — they receive it in a different week.</p>
+    </div>
+    <div>
+      <table>
+        <tr><th>What we measure</th><th>Why this one</th></tr>
+        <tr><td>Recurrence of the same CI and failure signature within 30 days</td><td>Hard to game, and it is what "found the root cause" actually looks like</td></tr>
+        <tr><td>Time to a reviewable change, paired with rework rate</td><td>Speed alone is meaningless if defects follow it</td></tr>
+        <tr><td>Cost per accepted outcome</td><td>Copilot is token-metered now; usage volume is a vanity number</td></tr>
+      </table>
+      <ol class="ask" style="margin-top:1.8cqi">
+        <li>Approve randomised wave assignment across squads <span>— not volunteers</span></li>
+        <li>Hold a four-week baseline before the first install</li>
+        <li>Ratify non-attribution as policy, so the design stays legitimate</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<div class="nav">
+  <button id="prev" aria-label="Previous slide">Back</button>
+  <button id="next" aria-label="Next slide">Next</button>
+</div>
+</div>
+
+<script>
+  // stepped-wedge cells
+  (function(){
+    var g = document.getElementById('wedge');
+    if(!g) return;
+    var start = [0,3,6,9], x0 = 18, w = 28, h = 18, gap = 2;
+    for(var r=0;r<4;r++){
+      for(var c=0;c<12;c++){
+        var rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        rect.setAttribute('x', x0 + c*(w+gap));
+        rect.setAttribute('y', 24 + r*28);
+        rect.setAttribute('width', w);
+        rect.setAttribute('height', h);
+        rect.setAttribute('fill', c >= start[r] ? '#17202A' : '#DADDD8');
+        g.appendChild(rect);
+      }
+    }
+  })();
+
+  // navigation
+  (function(){
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var i = 0;
+    function show(n){
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    }
+    document.getElementById('next').addEventListener('click', function(){ show(i+1); });
+    document.getElementById('prev').addEventListener('click', function(){ show(i-1); });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown'){ show(i+1); e.preventDefault(); }
+      if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ show(i-1); e.preventDefault(); }
+      if(/^[1-5]$/.test(e.key)){ show(parseInt(e.key,10)-1); }
+    });
+    var x = null;
+    var stage = document.getElementById('stage');
+    stage.addEventListener('touchstart', function(e){ x = e.changedTouches[0].clientX; }, {passive:true});
+    stage.addEventListener('touchend', function(e){
+      if(x === null) return;
+      var d = e.changedTouches[0].clientX - x;
+      if(Math.abs(d) > 45){ show(d < 0 ? i+1 : i-1); }
+      x = null;
+    }, {passive:true});
+  })();
+</script>
+</body>
+</html>
